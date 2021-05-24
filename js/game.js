@@ -1,4 +1,4 @@
-var upKey, leftKey, rightKey, downKey, attKey, spaceKey, activePointer, centerX, centerY, defaultVolume;
+var upKey, leftKey, rightKey, downKey, attKey, spaceKey, activePointer, centerX, centerY, defaultVolume, animConfigs;
 const MAX_SPEED = 400; // pixels/second
 const DRAG = 1000; // pixels/second
 const GRAVITY = 2600; // pixels/second/second
@@ -12,6 +12,7 @@ const W = 1280;
 const H = 640;
 const VOID = 0;
 const PLATFORM = 1;
+const SHOOTER = 2;
 
 
 const fireInputIsActive = function() {
