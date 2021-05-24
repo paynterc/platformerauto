@@ -8,6 +8,9 @@ class BootScene extends Phaser.Scene{
     preload()
     {
         this.load.image('hero', 'img/greenSquare.png');
+        this.load.image('shooter', 'img/shooter.png');
+        this.load.image('spikes', 'img/spikes.png');
+        this.load.spritesheet('fireball', 'img/fireball.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.image('enemy', 'img/redSquare.png');
         this.load.image('platform', 'img/ground.png');
         this.load.image('square', 'img/ui/whiteSquare32x.png');
@@ -37,6 +40,14 @@ class BootScene extends Phaser.Scene{
 
         this.mediaService = new MediaService(this);
         this.mediaService.setMusic('theme1');
+
+        animConfigs = {};
+        animConfigs.fireball = {
+            key: 'fireball',
+            frames: this.anims.generateFrameNumbers('fireball', { start: 0, end: 3, first: 0 }),
+            frameRate: 8,
+            repeat: -1
+        };
 
         this.scene.start('MenuScene');
     }

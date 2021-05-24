@@ -1,6 +1,3 @@
-
-
-
 class GameScene extends Phaser.Scene {
     constructor()
     {
@@ -27,6 +24,8 @@ class GameScene extends Phaser.Scene {
     {
         let that = this;
         this.cameras.main.setBackgroundColor(0x000000);
+        this.addAnimations();
+
 
         //If world is bigger than the window
         this.worldWidth = this.physics.world.bounds.width;
@@ -44,7 +43,7 @@ class GameScene extends Phaser.Scene {
         this.nextChunkTrigger = W/2;
 
 
-        this.player = this.physics.add.sprite(0, this.floorLvl * UNITSIZE - 64, 'hero');
+        this.player = this.physics.add.sprite(0+HALFUNIT, this.floorLvl * UNITSIZE - (UNITSIZE*2), 'hero');
         this.player.setBounce(0.2);
         this.player.setCollideWorldBounds(false);
         this.player.body.maxVelocity.setTo(MAX_SPEED, MAX_SPEED * 5); // x, y
@@ -58,11 +57,16 @@ class GameScene extends Phaser.Scene {
         this.platforms = this.physics.add.staticGroup();
         this.platformImages = this.add.group();
         this.enemies = this.add.group();
+        this.shooters = this.physics.add.staticGroup();
+        this.bullets = this.add.group();
+        this.spikes = this.physics.add.staticGroup();
 
         // colliders
         this.physics.add.collider(this.player, this.platforms, this.collidePlatform);
         this.physics.add.collider(this.enemies, this.platforms);
         this.physics.add.collider(this.player, this.enemies, this.hitEnemy,false,this);
+        this.physics.add.overlap(this.player, this.bullets, this.hitBullet,false,this);
+        this.physics.add.collider(this.player, this.spikes, this.hitSpike,false,this);
 
 
         //this.makePlatforms();
@@ -101,7 +105,10 @@ class GameScene extends Phaser.Scene {
 
     }
 
-
+    addAnimations()
+    {
+        this.anims.create(animConfigs.fireball);
+    }
 
     // xx will be the far left side. y is always 0
     makeChunk(setRespawn){
@@ -128,6 +135,7 @@ class GameScene extends Phaser.Scene {
         let wRemaining = this.chunkW;
         let modFloor = undefined;
         let curX = 0;
+        let firstFloorLvl = this.floorLvl;
 
 
         if(setRespawn){
@@ -202,6 +210,25 @@ class GameScene extends Phaser.Scene {
                         let P = this.add.sprite(this.chunkX+(i*UNITSIZE),j*UNITSIZE,'platform');
                         P.setOrigin(0);
                         this.platforms.add(P);
+
+                        if( Phaser.Math.Between(1,100)===100 && !setRespawn && j!=firstFloorLvl){
+                            let P = new Shooter(this, this.chunkX+(i*UNITSIZE) + HALFUNIT,j*UNITSIZE + HALFUNIT);
+                            let chooseAngle = Phaser.Math.Between(0,3);
+                            if(chooseAngle===0){
+                                P.angle = 180;
+                            }else if(chooseAngle===1){
+                                P.angle = -90;
+                            }else if(chooseAngle===2){
+                                P.angle = 90;
+                            }else{
+                                P.angle = 0;
+                            }
+                            this.shooters.add(P);
+                        }else if(Phaser.Math.Between(1,10)===10 && j!=firstFloorLvl && ckGrid[i][Math.max(j-1,0)] === VOID){
+                            let S = new Spikes(this, this.chunkX+(i*UNITSIZE) + HALFUNIT,j*UNITSIZE);
+                            this.spikes.add(S);
+                        }
+
                     }else{
                         // images are lighter weight, less memory.
                         let P = this.add.image(this.chunkX+(i*UNITSIZE),j*UNITSIZE,'platform');
@@ -238,6 +265,13 @@ class GameScene extends Phaser.Scene {
             callbackScope: this,
             loop: true
         });
+    }
+
+    makeShooter(x,y){
+        let shooter = new Shooter(this,x,y,);
+        shooter.angle = -90;
+        // shooter.rotation = 90;
+        this.shooters.add(shooter);
     }
 
     makeEnemy = function(){
@@ -279,6 +313,19 @@ class GameScene extends Phaser.Scene {
         }
     }
 
+    hitBullet(player,bullet){
+        if(this.GAMEOVER) return false;
+        this.shakeIt();
+        bullet.destroy();
+        this.playerLoseLife();
+    }
+
+    hitSpike(player,spike){
+        if(this.GAMEOVER) return false;
+        this.shakeIt();
+        this.playerLoseLife();
+    }
+
     shakeIt(){
         if(this.shakeCooldown<1){
             this.shakeCooldown = 1000;
@@ -295,6 +342,7 @@ class GameScene extends Phaser.Scene {
 
     update(time,delta)
     {
+
         if(this.restart){
             this.scene.restart();
         }
@@ -394,11 +442,30 @@ class GameScene extends Phaser.Scene {
         }
 
 
+
+
+        this.shooters.children.each((e)=>{
+            if(e.x< playerX - (W*2)){
+                e.destroy();
+            }else{
+                e.update(time,delta);
+            }
+        });
+
+
+        this.bullets.children.each((e)=>{
+            if(e.x<this.player.x - W/2
+                || e.x>this.player.x + W/2
+                || e.y>H
+                || e.y<0
+            ){
+                e.destroy();
+            }
+        });
+
         if(this.player.y>H+512){
             this.playerLoseLife();
         }
-
-
 
     }
     
