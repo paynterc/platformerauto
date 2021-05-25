@@ -12,7 +12,13 @@ const W = 1280;
 const H = 640;
 const VOID = 0;
 const PLATFORM = 1;
-const SHOOTER = 2;
+
+const STATE_EN_IDLE = 0;
+const STATE_EN_MOVE = 1;
+const STATE_EN_HIT = 2;
+const STATE_EN_ATTACK = 3;
+const STATE_EN_JUMP = 4;
+const STATE_EN_DIE = 5;
 
 
 const fireInputIsActive = function() {

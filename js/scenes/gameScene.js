@@ -55,15 +55,18 @@ class GameScene extends Phaser.Scene {
 
         // groups
         this.platforms = this.physics.add.staticGroup();
+        this.emyBlockers = this.physics.add.staticGroup();
         this.platformImages = this.add.group();
         this.enemies = this.add.group();
         this.shooters = this.physics.add.staticGroup();
         this.bullets = this.add.group();
         this.spikes = this.physics.add.staticGroup();
+        this.cleanup = this.add.group();
 
         // colliders
         this.physics.add.collider(this.player, this.platforms, this.collidePlatform);
         this.physics.add.collider(this.enemies, this.platforms);
+        this.physics.add.collider(this.enemies, this.emyBlockers);
         this.physics.add.collider(this.player, this.enemies, this.hitEnemy,false,this);
         this.physics.add.overlap(this.player, this.bullets, this.hitBullet,false,this);
         this.physics.add.collider(this.player, this.spikes, this.hitSpike,false,this);
@@ -103,11 +106,17 @@ class GameScene extends Phaser.Scene {
 
         this.scene.launch('HudScene');
 
+        this.makeEnemy(this.player.x+64,this.player.y);
     }
 
     addAnimations()
     {
         this.anims.create(animConfigs.fireball);
+        this.anims.create(animConfigs.emyIdle);
+        this.anims.create(animConfigs.emyHit);
+        this.anims.create(animConfigs.emyWalk);
+        this.anims.create(animConfigs.emyDie);
+
     }
 
     // xx will be the far left side. y is always 0
@@ -143,6 +152,7 @@ class GameScene extends Phaser.Scene {
             let py = (this.floorLvl*UNITSIZE) - HALFUNIT;
             let P = this.add.image(px,py+UNITSIZE,'square');
             P.setDepth(1);
+            this.cleanup.add(P);
             this.respawns.push([px,py-UNITSIZE]);
         }
 
@@ -199,6 +209,7 @@ class GameScene extends Phaser.Scene {
         for(var i=0; i<this.chunkW; i++){
             for(var j=0;j<this.chunkH; j++){
                 if(ckGrid[i][j]===PLATFORM){
+
                     if(
                         ckGrid[Math.max(i-1,0)][j] === VOID
                         || ckGrid[Math.min(i+1,this.chunkW-1)][j] === VOID
@@ -210,6 +221,7 @@ class GameScene extends Phaser.Scene {
                         let P = this.add.sprite(this.chunkX+(i*UNITSIZE),j*UNITSIZE,'platform');
                         P.setOrigin(0);
                         this.platforms.add(P);
+                        this.cleanup.add(P);
 
                         if( Phaser.Math.Between(1,100)===100 && !setRespawn && j!=firstFloorLvl){
                             let P = new Shooter(this, this.chunkX+(i*UNITSIZE) + HALFUNIT,j*UNITSIZE + HALFUNIT);
@@ -224,9 +236,42 @@ class GameScene extends Phaser.Scene {
                                 P.angle = 0;
                             }
                             this.shooters.add(P);
+                            this.cleanup.add(P);
+
                         }else if(Phaser.Math.Between(1,10)===10 && j!=firstFloorLvl && ckGrid[i][Math.max(j-1,0)] === VOID){
                             let S = new Spikes(this, this.chunkX+(i*UNITSIZE) + HALFUNIT,j*UNITSIZE);
                             this.spikes.add(S);
+                            this.cleanup.add(S);
+
+                        }
+
+                        // Invisible blockers for enemies
+                        if(
+                            ckGrid[Math.max(i-1,0)][j] === VOID && ckGrid[i][Math.max(j-1,0)] === VOID
+                            && ckGrid[Math.min(i+1,this.chunkW-1)][j] === PLATFORM
+                        ){
+                            let B = this.add.sprite(this.chunkX+((i-1)*UNITSIZE),(j-1)*UNITSIZE,'blueSquare');
+                            B.setOrigin(0);
+                            B.setAlpha(0);
+                            this.emyBlockers.add(B);
+                            this.cleanup.add(B);
+                        }
+
+                        if(
+                            ckGrid[Math.min(i+1,this.chunkW-1)][j] === VOID && ckGrid[i][Math.max(j-1,0)] === VOID
+                            && ckGrid[Math.max(i-1,0)][j] === PLATFORM
+                        ){
+                            let B = this.add.sprite(this.chunkX+((i+1)*UNITSIZE),(j-1)*UNITSIZE,'blueSquare');
+                            B.setOrigin(0);
+                            B.setAlpha(0);
+                            this.emyBlockers.add(B);
+                            this.cleanup.add(B);
+
+                        }
+
+                        // chance for enemy spawn
+                        if(Phaser.Math.Between(1,30)===1){
+                            new Enemy(this, this.chunkX+(i*UNITSIZE),-128);
                         }
 
                     }else{
@@ -234,6 +279,7 @@ class GameScene extends Phaser.Scene {
                         let P = this.add.image(this.chunkX+(i*UNITSIZE),j*UNITSIZE,'platform');
                         P.setOrigin(0);
                         this.platformImages.add(P);
+                        this.cleanup.add(P);
                     }
 
                 }
@@ -246,6 +292,8 @@ class GameScene extends Phaser.Scene {
                     // instatiate floor
                     let P = this.add.image(this.chunkX+(i*UNITSIZE),(this.chunkH-1)*UNITSIZE,'blueSquare');
                     P.setOrigin(0);
+                    this.cleanup.add(P);
+
                 }
         }
 
@@ -274,15 +322,9 @@ class GameScene extends Phaser.Scene {
         this.shooters.add(shooter);
     }
 
-    makeEnemy = function(){
+    makeEnemy(x,y){
         if(this.enemies.countActive(true) >= MAXENEMIES) return false;
-        let enemy = this.physics.add.sprite(W/2,32,'enemy');
-        enemy.setBounce(0.2);
-        enemy.setCollideWorldBounds(false);
-        enemy.body.maxVelocity.setTo(MAX_SPEED, MAX_SPEED * 10); // x, y
-        enemy.body.acceleration.x = ACCELERATION/2 * this.enemyDirection;
-        this.enemies.add(enemy);
-        this.enemyDirection *= -1;
+        let enemy = new Enemy(this,x,y);
     }
 
     collidePlatform(player,platform){
@@ -304,13 +346,18 @@ class GameScene extends Phaser.Scene {
 
 
     hitEnemy(player,enemy){
+        if(enemy.myState === STATE_EN_DIE){
+            return false;
+        }
 
-        this.shakeIt();
         if(player.y <= enemy.y-UNITSIZE){
-            enemy.destroy();
-        }else if(enemy.y <= player.y-UNITSIZE){
+            this.shakeIt();
+            player.body.velocity.y = ACCELERATION *-1;
+            enemy.kill();
+        }else if(player.y >= enemy.y-UNITSIZE/4){
             this.playerLoseLife();
         }
+
     }
 
     hitBullet(player,bullet){
@@ -377,53 +424,6 @@ class GameScene extends Phaser.Scene {
             this.player.body.acceleration.x = 0;
         }
 
-        let eArray = this.enemies.getChildren();
-        for (var i = 0; i < eArray.length; i++) {
-            let emy = eArray[i];
-
-            if(emy.body.touching.right){
-                emy.body.acceleration.x = ACCELERATION/2 * -1;
-            }else if(emy.body.touching.left){
-                emy.body.acceleration.x = ACCELERATION/2;
-            }else{
-                //do nothing
-            }
-
-            if(emy.x < 0 - UNITSIZE/2){
-                if(emy.y>H-64){
-                    emy.y=0;
-                    emy.x=W/2;
-                }else{
-                    emy.x = W+UNITSIZE/2;
-                }
-            }else if(emy.x > W+UNITSIZE/2){
-                if(emy.y>H-64){
-                    emy.y=0;
-                    emy.x=W/2;
-                }else{
-                    emy.x = UNITSIZE/2;
-                }
-            }else if(emy.y > H){
-                emy.destroy();
-            }
-        }
-
-        let pArray = this.platforms.getChildren();
-        let playerX = this.player.x;
-        for (var i = 0; i < pArray.length; i++) {
-            let plat = pArray[i];
-            if(plat.x< playerX - (W*2)){
-                plat.destroy();
-            }
-        }
-
-        pArray = this.platformImages.getChildren();
-        for (var i = 0; i < pArray.length; i++) {
-            let plat = pArray[i];
-            if(plat.x< playerX - (W*2)){
-                plat.destroy();
-            }
-        }
 
         for(let i=0;i<this.respawns.length;i++){
             if(this.player.x > this.respawns[i][0]){
@@ -441,24 +441,32 @@ class GameScene extends Phaser.Scene {
             }
         }
 
-
-
+        // update groups
+        let eArray = this.enemies.getChildren();
+        for (var i = 0; i < eArray.length; i++) {
+            let emy = eArray[i];
+            emy.update(time,delta);
+        }
 
         this.shooters.children.each((e)=>{
-            if(e.x< playerX - (W*2)){
-                e.destroy();
-            }else{
-                e.update(time,delta);
-            }
+            e.update(time,delta);
         });
 
+        // cleanup
+        let playerX = this.player.x;
 
         this.bullets.children.each((e)=>{
-            if(e.x<this.player.x - W/2
+            if(e.x<playerX - W/2
                 || e.x>this.player.x + W/2
                 || e.y>H
                 || e.y<0
             ){
+                e.destroy();
+            }
+        });
+
+        this.cleanup.children.each((e)=>{
+            if(e.x< playerX - (W*2)){
                 e.destroy();
             }
         });
