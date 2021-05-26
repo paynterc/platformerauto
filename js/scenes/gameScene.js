@@ -60,13 +60,16 @@ class GameScene extends Phaser.Scene {
         this.enemies = this.add.group();
         this.shooters = this.physics.add.staticGroup();
         this.bullets = this.add.group();
+        this.loot = this.add.group();
         this.spikes = this.physics.add.staticGroup();
         this.cleanup = this.add.group();
 
         // colliders
-        this.physics.add.collider(this.player, this.platforms, this.collidePlatform);
+        this.physics.add.collider(this.player, this.platforms, this.collidePlatform,false,this);
+        this.physics.add.collider(this.player, this.loot, this.hitLoot,false,this);
         this.physics.add.collider(this.enemies, this.platforms);
         this.physics.add.collider(this.enemies, this.emyBlockers);
+        this.physics.add.collider(this.loot, this.platforms);
         this.physics.add.collider(this.player, this.enemies, this.hitEnemy,false,this);
         this.physics.add.overlap(this.player, this.bullets, this.hitBullet,false,this);
         this.physics.add.collider(this.player, this.spikes, this.hitSpike,false,this);
@@ -106,7 +109,8 @@ class GameScene extends Phaser.Scene {
 
         this.scene.launch('HudScene');
 
-        this.makeEnemy(this.player.x+64,this.player.y);
+
+        this.score = 0;
     }
 
     addAnimations()
@@ -116,6 +120,7 @@ class GameScene extends Phaser.Scene {
         this.anims.create(animConfigs.emyHit);
         this.anims.create(animConfigs.emyWalk);
         this.anims.create(animConfigs.emyDie);
+        this.anims.create(animConfigs.coin);
 
     }
 
@@ -245,6 +250,10 @@ class GameScene extends Phaser.Scene {
 
                         }
 
+                        if(Phaser.Math.Between(1,20)===1 && ckGrid[i][Math.max(j-1,0)] === VOID){
+                            new Coin(this,this.chunkX+(i*UNITSIZE),j*UNITSIZE- UNITSIZE,{vspd:0,hspd:0});
+                        }
+
                         // Invisible blockers for enemies
                         if(
                             ckGrid[Math.max(i-1,0)][j] === VOID && ckGrid[i][Math.max(j-1,0)] === VOID
@@ -344,6 +353,13 @@ class GameScene extends Phaser.Scene {
         }
     }
 
+    hitLoot(player,loot){
+        if(loot.cooldown<1){
+            this.score++;
+            this.events.emit('scoreUpdated');
+            loot.destroy();
+        }
+    }
 
     hitEnemy(player,enemy){
         if(enemy.myState === STATE_EN_DIE){
@@ -354,6 +370,10 @@ class GameScene extends Phaser.Scene {
             this.shakeIt();
             player.body.velocity.y = ACCELERATION *-1;
             enemy.kill();
+            for(let i=0;i<3;i++){
+                new Coin(this,enemy.x,enemy.y);
+            }
+
         }else if(player.y >= enemy.y-UNITSIZE/4){
             this.playerLoseLife();
         }
@@ -452,6 +472,10 @@ class GameScene extends Phaser.Scene {
             e.update(time,delta);
         });
 
+        this.loot.children.each((e)=>{
+            e.update(time,delta);
+        });
+
         // cleanup
         let playerX = this.player.x;
 
@@ -487,6 +511,7 @@ class GameScene extends Phaser.Scene {
     }
 
     gameRestart(){
+        this.score = 0;
         this.lives = 3;
         this.GAMEOVER=false;
         this.restart=true;

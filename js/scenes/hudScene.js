@@ -17,6 +17,7 @@ class HudScene extends Phaser.Scene{
         this.gameScene = this.scene.get('GameScene');
         this.gameScene.events.on('playerDied', this.drawLives, this);
         this.gameScene.events.on('gameOver', this.gameOver, this);
+        this.gameScene.events.on('scoreUpdated', this.updateScore, this);
 
         this.lifeImages = this.add.group();
         this.drawLives();
@@ -28,6 +29,8 @@ class HudScene extends Phaser.Scene{
         this.restartText = this.add.text(centerX, centerY+64, "PLAY AGAIN", { fontSize: '32px', fontFamily: 'FourBitRegular' });
         this.restartText.setOrigin(0.5);
         this.restartText.setVisible(false);
+
+        this.scoreText = this.add.text(16, 16, "Score: " + this.gameScene.score.toString(), { fontSize: '16px', fontFamily: 'FourBitRegular' });
 
         // Put this last
         let settingsButton = this.add.sprite(32,H-HALFUNIT,'equalizer').setScale(0.5).setAlpha(0.5).setInteractive().on('pointerdown', (pointer, localX, localY, event) => {
@@ -43,6 +46,9 @@ class HudScene extends Phaser.Scene{
 
     }
 
+    updateScore(){
+        this.scoreText.setText("Score: "+ this.gameScene.score.toString());
+    }
     gameOver(){
 
         this.gameOverText.setVisible(true);

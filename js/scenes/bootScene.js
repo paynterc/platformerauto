@@ -23,6 +23,7 @@ class BootScene extends Phaser.Scene{
         this.load.spritesheet('emyHit', 'img/emyHit.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('emyWalk', 'img/emyWalk.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('emyDie', 'img/emyDie.png',{ frameWidth: 32, frameHeight: 32 });
+        this.load.spritesheet('coin', 'img/coin.png',{ frameWidth: 16, frameHeight: 16 });
 
 
         this.load.audio('theme1', 'audio/music/Mushrooms.mp3');
@@ -83,6 +84,13 @@ class BootScene extends Phaser.Scene{
             frames: this.anims.generateFrameNumbers('emyDie', { start: 0, end: 14, first: 0 }),
             frameRate: 16,
             repeat: 0
+        };
+
+        animConfigs.coin = {
+            key: 'coin',
+            frames: this.anims.generateFrameNumbers('coin', { start: 0, end: 7, first: 0 }),
+            frameRate: 16,
+            repeat: -1
         };
 
         this.scene.start('MenuScene');
