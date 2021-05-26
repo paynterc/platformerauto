@@ -25,6 +25,10 @@ class BootScene extends Phaser.Scene{
         this.load.spritesheet('emyDie', 'img/emyDie.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('coin', 'img/coin.png',{ frameWidth: 16, frameHeight: 16 });
 
+        this.load.audio('coinPickup', 'audio/sfx/Pickup_Coin36.mp3');
+        this.load.audio('dropFall', 'audio/sfx/Hit_Hurt7.mp3');
+        this.load.audio('playerDie', 'audio/sfx/PlayerDie.mp3');
+
 
         this.load.audio('theme1', 'audio/music/Mushrooms.mp3');
 

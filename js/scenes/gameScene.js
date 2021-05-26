@@ -111,6 +111,10 @@ class GameScene extends Phaser.Scene {
 
 
         this.score = 0;
+
+        this.soundCoinPickup = this.sound.add('coinPickup',{volume:.25});
+        this.soundDropFall = this.sound.add('dropFall',{volume:.25});
+        this.soundPlayerDie = this.sound.add('playerDie',{volume:.25});
     }
 
     addAnimations()
@@ -341,11 +345,12 @@ class GameScene extends Phaser.Scene {
     }
 
     playerLoseLife(){
+        if(this.GAMEOVER) return false;
         if(this.restart) return false;
 
         this.lives--;
         this.events.emit('playerDied');
-
+        this.soundPlayerDie.play();
         if(this.lives<0){
             this.gameOver();
         }else{
@@ -357,6 +362,7 @@ class GameScene extends Phaser.Scene {
         if(loot.cooldown<1){
             this.score++;
             this.events.emit('scoreUpdated');
+            this.soundCoinPickup.play();
             loot.destroy();
         }
     }
@@ -370,6 +376,7 @@ class GameScene extends Phaser.Scene {
             this.shakeIt();
             player.body.velocity.y = ACCELERATION *-1;
             enemy.kill();
+            this.soundDropFall.play();
             for(let i=0;i<3;i++){
                 new Coin(this,enemy.x,enemy.y);
             }
