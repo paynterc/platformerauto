@@ -45,35 +45,40 @@ class Enemy extends Phaser.GameObjects.Sprite {
         // Override this
     }
 
-    update(){
-        if(this.body.touching.down && !this.walkStarted){
-            this.walkStarted=true;
-            this.body.acceleration.x = this.defaultAcc;
-            this.myState = STATE_EN_MOVE;
-        }
+    update(time,delta){
+
+        this.startMovement();
         switch (this.myState) {
             case STATE_EN_IDLE:
-                this.idle();
+                this.idle(time,delta);
                 break;
             case STATE_EN_MOVE:
-                this.walk();
+                this.walk(time,delta);
                 break;
             case STATE_EN_HIT:
-                this.hit();
+                this.hit(time,delta);
                 break;
             case STATE_EN_ATTACK:
-                this.attack();
+                this.attack(time,delta);
                 break;
             case STATE_EN_DIE:
-                this.die();
+                this.die(time,delta);
                 break;
             default:
-                this.idle();
+                this.idle(time,delta);
                 break;
         }
 
         if(this.y > H){
             this.destroy();
+        }
+    }
+
+    startMovement(){
+        if(this.body.touching.down && !this.walkStarted){
+            this.walkStarted=true;
+            this.body.acceleration.x = this.defaultAcc;
+            this.myState = STATE_EN_MOVE;
         }
     }
 
@@ -116,6 +121,11 @@ class Enemy extends Phaser.GameObjects.Sprite {
         if(this.myState != STATE_EN_DIE){
             this.myState = STATE_EN_DIE;
         }
+    }
+
+    // I was hit
+    hit(){
+
     }
 
     die(){

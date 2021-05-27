@@ -60,6 +60,7 @@ class GameScene extends Phaser.Scene {
         this.enemies = this.add.group();
         this.shooters = this.physics.add.staticGroup();
         this.bullets = this.add.group();
+        this.splatbullets = this.add.group();
         this.loot = this.add.group();
         this.spikes = this.physics.add.staticGroup();
         this.cleanup = this.add.group();
@@ -68,10 +69,12 @@ class GameScene extends Phaser.Scene {
         this.physics.add.collider(this.player, this.platforms, this.collidePlatform,false,this);
         this.physics.add.collider(this.player, this.loot, this.hitLoot,false,this);
         this.physics.add.collider(this.enemies, this.platforms);
+        this.physics.add.collider(this.splatbullets, this.platforms, this.bulletHitPlatform,false,this);
         this.physics.add.collider(this.enemies, this.emyBlockers);
         this.physics.add.collider(this.loot, this.platforms);
         this.physics.add.collider(this.player, this.enemies, this.hitEnemy,false,this);
         this.physics.add.overlap(this.player, this.bullets, this.hitBullet,false,this);
+        this.physics.add.overlap(this.player, this.splatbullets, this.hitBullet,false,this);
         this.physics.add.collider(this.player, this.spikes, this.hitSpike,false,this);
 
 
@@ -115,6 +118,15 @@ class GameScene extends Phaser.Scene {
         this.soundCoinPickup = this.sound.add('coinPickup',{volume:.25});
         this.soundDropFall = this.sound.add('dropFall',{volume:.25});
         this.soundPlayerDie = this.sound.add('playerDie',{volume:.25});
+
+        this.enemyFly = new EnemyFly(this,this.player.x-64,this.player.y-128);
+        this.flyTween = this.tweens.addCounter({
+            from: 20,
+            to: -20,
+            duration: 1000,
+            yoyo: true,
+            loop:-1
+        });
     }
 
     addAnimations()
@@ -125,6 +137,8 @@ class GameScene extends Phaser.Scene {
         this.anims.create(animConfigs.emyWalk);
         this.anims.create(animConfigs.emyDie);
         this.anims.create(animConfigs.coin);
+        this.anims.create(animConfigs.emyYellowFly);
+        this.anims.create(animConfigs.emyYellowDie);
 
     }
 
@@ -283,8 +297,13 @@ class GameScene extends Phaser.Scene {
                         }
 
                         // chance for enemy spawn
-                        if(Phaser.Math.Between(1,30)===1){
+                        if(Phaser.Math.Between(1,30)===1 && ckGrid[i][Math.max(j-1,0)] === VOID){
                             new Enemy(this, this.chunkX+(i*UNITSIZE),-128);
+                        }
+
+                        // chance for flying spawn
+                        if(Phaser.Math.Between(1,40)===1 && ckGrid[i][Math.max(j-1,0)] === VOID){
+                            new EnemyFly(this, this.chunkX+(i*UNITSIZE),(j-2)*UNITSIZE);
                         }
 
                     }else{
@@ -343,7 +362,9 @@ class GameScene extends Phaser.Scene {
     collidePlatform(player,platform){
 
     }
-
+    bulletHitPlatform(bullet,platform){
+        bullet.destroy();
+    }
     playerLoseLife(){
         if(this.GAMEOVER) return false;
         if(this.restart) return false;
@@ -418,6 +439,8 @@ class GameScene extends Phaser.Scene {
     {
 
         if(this.restart){
+            this.flyTween.remove();
+            this.flyTween = undefined;
             this.scene.restart();
         }
         if(this.reset){
@@ -522,6 +545,7 @@ class GameScene extends Phaser.Scene {
         this.lives = 3;
         this.GAMEOVER=false;
         this.restart=true;
+
     }
 
 }

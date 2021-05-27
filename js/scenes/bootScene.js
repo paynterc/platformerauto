@@ -16,6 +16,7 @@ class BootScene extends Phaser.Scene{
         this.load.image('blueSquare', 'img/blueSquare.png');
         this.load.image('audio', 'img/ui/Audio34x.png');
         this.load.image('equalizer', 'img/ui/Equalizer34x.png');
+        this.load.image('egg', 'img/egg.png');
 
         this.load.spritesheet('fireball', 'img/fireball.png',{ frameWidth: 32, frameHeight: 32 });
 
@@ -23,6 +24,11 @@ class BootScene extends Phaser.Scene{
         this.load.spritesheet('emyHit', 'img/emyHit.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('emyWalk', 'img/emyWalk.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('emyDie', 'img/emyDie.png',{ frameWidth: 32, frameHeight: 32 });
+
+        this.load.spritesheet('emyYellowFly', 'img/emyYellowFly.png',{ frameWidth: 32, frameHeight: 32 });
+        this.load.spritesheet('emyYellowDie', 'img/emyYellowDie.png',{ frameWidth: 32, frameHeight: 32 });
+
+
         this.load.spritesheet('coin', 'img/coin.png',{ frameWidth: 16, frameHeight: 16 });
 
         this.load.audio('coinPickup', 'audio/sfx/Pickup_Coin36.mp3');
@@ -95,6 +101,20 @@ class BootScene extends Phaser.Scene{
             frames: this.anims.generateFrameNumbers('coin', { start: 0, end: 7, first: 0 }),
             frameRate: 16,
             repeat: -1
+        };
+
+        animConfigs.emyYellowFly = {
+            key: 'emyYellowFly',
+            frames: this.anims.generateFrameNumbers('emyYellowFly', { start: 0, end: 2, first: 0 }),
+            frameRate: 6,
+            repeat: -1
+        };
+
+        animConfigs.emyYellowDie = {
+            key: 'emyYellowDie',
+            frames: this.anims.generateFrameNumbers('emyYellowDie', { start: 0, end: 3, first: 0 }),
+            frameRate: 16,
+            repeat: 0
         };
 
         this.scene.start('MenuScene');
