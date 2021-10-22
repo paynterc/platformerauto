@@ -4,7 +4,7 @@ class Shooter extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this);
 
         this.myScene = scene;
-        this.myDelay = 1000;
+        this.myDelay = 2000;
         this.nextShoot = 0;
         this.initSpeed=128;
     }
@@ -20,15 +20,9 @@ class Shooter extends Phaser.Physics.Arcade.Sprite {
     }
 
     shoot(){
-        let bullet = this.myScene.physics.add.sprite(this.x,this.y,'fireball');
-        bullet.play('fireball');
-        bullet.body.setAllowGravity(false);
-        bullet.angle = this.angle;
-        bullet.rotation = this.rotation;
-        const vec = new Phaser.Math.Vector2();
-        vec.setToPolar(bullet.rotation, this.initSpeed);// 500 is the bullet speed
-        bullet.body.acceleration = vec;
-        this.myScene.bullets.add(bullet);
+
+        let bullet = new Bullet(this.myScene,this.x,this.y,this.rotation,{anm:'fireball'});
+
     }
 
 

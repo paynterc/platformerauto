@@ -40,9 +40,10 @@ class EnemyFly extends Enemy {
             this.y=UNITSIZE;
         }
 
-        if(this.anims.currentAnim.key != this.anmWalk){
-            this.play(this.anmWalk);
-        }
+            if(this.anmWalk){
+                if(this.anims.currentAnim.key != this.anmWalk) this.play(this.anmWalk);
+            }
+
         if(this.body.touching.right){
             this.body.acceleration.x = this.defaultAcc * -1;
         }else if(this.body.touching.left){
@@ -72,7 +73,11 @@ class EnemyFly extends Enemy {
 
 
     shoot(){
-        let egg = this.myScene.physics.add.sprite(this.x,this.y,'egg');
-        this.myScene.splatbullets.add(egg);
+        // let egg = this.myScene.physics.add.sprite(this.x,this.y,'egg');
+        // this.myScene.splatbullets.add(egg);
+
+        let egg = new Bullet(this.myScene,this.x,this.y,0,{img:'egg',allowGrav:true,initSpeed:0,myGroup:this.myScene.splatbullets});
+
+
     }
 }

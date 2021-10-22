@@ -20,6 +20,8 @@ const STATE_EN_ATTACK = 3;
 const STATE_EN_JUMP = 4;
 const STATE_EN_DIE = 5;
 
+const PLAYSTATE_MAIN = 0;
+const PLAYSTATE_BOSS = 1;
 
 const fireInputIsActive = function() {
     return activePointer.isDown;

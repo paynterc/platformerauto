@@ -30,7 +30,7 @@ class HudScene extends Phaser.Scene{
         this.restartText.setOrigin(0.5);
         this.restartText.setVisible(false);
 
-        this.scoreText = this.add.text(16, 16, "Score: " + this.gameScene.score.toString(), { fontSize: '16px', fontFamily: 'FourBitRegular' });
+        this.scoreText = this.add.text(16, 8, "Score: " + this.gameScene.score.toString(), { fontSize: '16px', fontFamily: 'FourBitRegular' });
 
         // Put this last
         let settingsButton = this.add.sprite(32,H-HALFUNIT,'equalizer').setScale(0.5).setAlpha(0.5).setInteractive().on('pointerdown', (pointer, localX, localY, event) => {

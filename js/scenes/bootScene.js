@@ -11,6 +11,7 @@ class BootScene extends Phaser.Scene{
         this.load.image('shooter', 'img/shooter.png');
         this.load.image('spikes', 'img/spikes.png');
         this.load.image('enemy', 'img/redSquare.png');
+        this.load.image('redSquare', 'img/redSquare.png');
         this.load.image('platform', 'img/ground.png');
         this.load.image('square', 'img/ui/whiteSquare32x.png');
         this.load.image('blueSquare', 'img/blueSquare.png');
@@ -24,12 +25,23 @@ class BootScene extends Phaser.Scene{
         this.load.spritesheet('emyHit', 'img/emyHit.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('emyWalk', 'img/emyWalk.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('emyDie', 'img/emyDie.png',{ frameWidth: 32, frameHeight: 32 });
+        this.load.spritesheet('gusguy', 'img/Gus.png',{ frameWidth: 32, frameHeight: 32 });
+
+
+        this.load.spritesheet('watcherIdle', 'img/WatcherIdle.png',{ frameWidth: 64, frameHeight: 64 });
+
 
         this.load.spritesheet('emyYellowFly', 'img/emyYellowFly.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('emyYellowDie', 'img/emyYellowDie.png',{ frameWidth: 32, frameHeight: 32 });
 
+        this.load.spritesheet('commander', 'img/commander2_256.png',{ frameWidth: 256, frameHeight: 256 });
+
 
         this.load.spritesheet('coin', 'img/coin.png',{ frameWidth: 16, frameHeight: 16 });
+
+        this.load.spritesheet('bossCrabWalk', 'img/MonsterBossWalk1.png',{ frameWidth: 448, frameHeight: 448 });
+        this.load.image('crableg', 'img/crableg.png');
+
 
         this.load.audio('coinPickup', 'audio/sfx/Pickup_Coin36.mp3');
         this.load.audio('dropFall', 'audio/sfx/Hit_Hurt7.mp3');
@@ -114,6 +126,41 @@ class BootScene extends Phaser.Scene{
             key: 'emyYellowDie',
             frames: this.anims.generateFrameNumbers('emyYellowDie', { start: 0, end: 3, first: 0 }),
             frameRate: 16,
+            repeat: 0
+        };
+
+        animConfigs.bossCrabWalk = {
+            key: 'bossCrabWalk',
+            frames: this.anims.generateFrameNumbers('bossCrabWalk', { start: 0, end: 9, first: 0 }),
+            frameRate: 12,
+            repeat: -1
+        };
+
+        animConfigs.watcherIdle = {
+            key: 'watcherIdle',
+            frames: this.anims.generateFrameNumbers('watcherIdle', { start: 0, end: 3, first: 0 }),
+            frameRate: 16,
+            repeat: -1
+        };
+
+        animConfigs.commanderWalk = {
+            key: 'commanderWalk',
+            frames: this.anims.generateFrameNumbers('commander', { start: 0, end: 2, first: 0 }),
+            frameRate: 6,
+            repeat: -1
+        };
+
+        animConfigs.commanderAttack1 = {
+            key: 'commanderAttack1',
+            frames: this.anims.generateFrameNumbers('commander', { start: 2, end: 7, first: 2 }),
+            frameRate: 12,
+            repeat: 0
+        };
+
+        animConfigs.gusGuyIdle = {
+            key: 'gusGuyIdle',
+            frames: this.anims.generateFrameNumbers('gusguy', { start: 0, end: 0, first: 0 }),
+            frameRate: 1,
             repeat: 0
         };
 

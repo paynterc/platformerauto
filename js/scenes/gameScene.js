@@ -12,7 +12,7 @@ class GameScene extends Phaser.Scene {
         this.chunkH = 20;
         this.resetX=0;
         this.resetY=0;
-
+        this.playState = PLAYSTATE_MAIN;//main or boss
     }
 
     preload()
@@ -52,6 +52,7 @@ class GameScene extends Phaser.Scene {
         this.resetY = this.player.y;
         this.canDoubleJump = false;
 
+        this.boss = undefined;
 
         // groups
         this.platforms = this.physics.add.staticGroup();
@@ -67,7 +68,7 @@ class GameScene extends Phaser.Scene {
 
         // colliders
         this.physics.add.collider(this.player, this.platforms, this.collidePlatform,false,this);
-        this.physics.add.collider(this.player, this.loot, this.hitLoot,false,this);
+        this.physics.add.overlap(this.player, this.loot, this.hitLoot,false,this);
         this.physics.add.collider(this.enemies, this.platforms);
         this.physics.add.collider(this.splatbullets, this.platforms, this.bulletHitPlatform,false,this);
         this.physics.add.collider(this.enemies, this.emyBlockers);
@@ -82,10 +83,7 @@ class GameScene extends Phaser.Scene {
 
         //this.startEnemies();
 
-        for(let i=0;i<4;i++){
-            let setRespawn = (i===0);
-            this.makeChunk(setRespawn);
-        }
+
 
 
 
@@ -115,7 +113,7 @@ class GameScene extends Phaser.Scene {
 
         this.score = 0;
 
-        this.soundCoinPickup = this.sound.add('coinPickup',{volume:.25});
+        this.soundCoinPickup = this.sound.add('coinPickup',{volume:.15});
         this.soundDropFall = this.sound.add('dropFall',{volume:.25});
         this.soundPlayerDie = this.sound.add('playerDie',{volume:.25});
 
@@ -127,6 +125,13 @@ class GameScene extends Phaser.Scene {
             yoyo: true,
             loop:-1
         });
+
+        for(let i=0;i<4;i++){
+            let setRespawn = (i===0);
+            this.makeChunk(setRespawn);
+        }
+
+        //this.makeBossLvl1();
     }
 
     addAnimations()
@@ -139,7 +144,20 @@ class GameScene extends Phaser.Scene {
         this.anims.create(animConfigs.coin);
         this.anims.create(animConfigs.emyYellowFly);
         this.anims.create(animConfigs.emyYellowDie);
+        this.anims.create(animConfigs.bossCrabWalk);
+        this.anims.create(animConfigs.watcherIdle);
+        this.anims.create(animConfigs.commanderWalk);
+        this.anims.create(animConfigs.commanderAttack1);
+        this.anims.create(animConfigs.gusGuyIdle);
 
+    }
+
+    getGridAt(grid,x,y){
+        if(!grid) return null;
+        if(x<0 || x>=grid.length) return null;
+        if(!grid[0]) return null;
+        if(y<0 || y>=grid[0].length) return null
+        return grid[x][y];
     }
 
     // xx will be the far left side. y is always 0
@@ -247,24 +265,13 @@ class GameScene extends Phaser.Scene {
                         this.cleanup.add(P);
 
                         if( Phaser.Math.Between(1,100)===100 && !setRespawn && j!=firstFloorLvl){
-                            let P = new Shooter(this, this.chunkX+(i*UNITSIZE) + HALFUNIT,j*UNITSIZE + HALFUNIT);
-                            let chooseAngle = Phaser.Math.Between(0,3);
-                            if(chooseAngle===0){
-                                P.angle = 180;
-                            }else if(chooseAngle===1){
-                                P.angle = -90;
-                            }else if(chooseAngle===2){
-                                P.angle = 90;
-                            }else{
-                                P.angle = 0;
-                            }
-                            this.shooters.add(P);
-                            this.cleanup.add(P);
+
+                            this.makeShooter(this.chunkX+(i*UNITSIZE) + HALFUNIT, j*UNITSIZE + HALFUNIT);
+
 
                         }else if(Phaser.Math.Between(1,10)===10 && j!=firstFloorLvl && ckGrid[i][Math.max(j-1,0)] === VOID){
-                            let S = new Spikes(this, this.chunkX+(i*UNITSIZE) + HALFUNIT,j*UNITSIZE);
-                            this.spikes.add(S);
-                            this.cleanup.add(S);
+
+                            this.makeSpike( this.chunkX+(i*UNITSIZE) + HALFUNIT,j*UNITSIZE);
 
                         }
 
@@ -277,41 +284,35 @@ class GameScene extends Phaser.Scene {
                             ckGrid[Math.max(i-1,0)][j] === VOID && ckGrid[i][Math.max(j-1,0)] === VOID
                             && ckGrid[Math.min(i+1,this.chunkW-1)][j] === PLATFORM
                         ){
-                            let B = this.add.sprite(this.chunkX+((i-1)*UNITSIZE),(j-1)*UNITSIZE,'blueSquare');
-                            B.setOrigin(0);
-                            B.setAlpha(0);
-                            this.emyBlockers.add(B);
-                            this.cleanup.add(B);
+                            this.makeBlocker(this.chunkX+((i-1)*UNITSIZE),(j-1)*UNITSIZE);
                         }
 
                         if(
                             ckGrid[Math.min(i+1,this.chunkW-1)][j] === VOID && ckGrid[i][Math.max(j-1,0)] === VOID
                             && ckGrid[Math.max(i-1,0)][j] === PLATFORM
                         ){
-                            let B = this.add.sprite(this.chunkX+((i+1)*UNITSIZE),(j-1)*UNITSIZE,'blueSquare');
-                            B.setOrigin(0);
-                            B.setAlpha(0);
-                            this.emyBlockers.add(B);
-                            this.cleanup.add(B);
+                            this.makeBlocker(this.chunkX+((i+1)*UNITSIZE),(j-1)*UNITSIZE);
 
                         }
 
                         // chance for enemy spawn
                         if(Phaser.Math.Between(1,30)===1 && ckGrid[i][Math.max(j-1,0)] === VOID){
                             new Enemy(this, this.chunkX+(i*UNITSIZE),-128);
-                        }
-
-                        // chance for flying spawn
-                        if(Phaser.Math.Between(1,40)===1 && ckGrid[i][Math.max(j-1,0)] === VOID){
-                            new EnemyFly(this, this.chunkX+(i*UNITSIZE),(j-2)*UNITSIZE);
+                        }else if(Phaser.Math.Between(1,20)===1 && ckGrid[i][Math.max(j-1,0)] === VOID){
+                            if(Phaser.Math.Between(1,2)==2){
+                                new GusGuy(this, this.chunkX+(i*UNITSIZE),(j-2)*UNITSIZE, 1,{'img':'gusguy'});
+                            }else{
+                                new EnemyFly(this, this.chunkX+(i*UNITSIZE),(j-2)*UNITSIZE);
+                            }
+                        }else if(Phaser.Math.Between(1,40)===1 && ckGrid[i][Math.max(j-1,0)] === VOID){
+                            //new Watcher(this, this.chunkX+(i*UNITSIZE),(j-2)*UNITSIZE, 1,{'img':'watcherIdle'});
+                            new Commander(this, this.chunkX+(i*UNITSIZE),-512,1,{'img':'commander'});
                         }
 
                     }else{
                         // images are lighter weight, less memory.
-                        let P = this.add.image(this.chunkX+(i*UNITSIZE),j*UNITSIZE,'platform');
-                        P.setOrigin(0);
-                        this.platformImages.add(P);
-                        this.cleanup.add(P);
+                        this.makeBlockImage(this.chunkX+(i*UNITSIZE),j*UNITSIZE);
+
                     }
 
                 }
@@ -334,37 +335,117 @@ class GameScene extends Phaser.Scene {
 
     }
 
+    makeBossLvl1(){
+        this.playState=PLAYSTATE_BOSS;
+
+        let roomX = this.chunkX + 32000;//left
+        let roomY = 0;//top
+        let bossGridW = W/UNITSIZE;
+        let bossGridH = H/UNITSIZE;
+
+        this.cameras.main.setBounds(roomX, 0, W, H)
+
+        //make a grid. fill it with blocks
+        let bossGrid = [];
+        for(var i=0; i<bossGridW; i++){
+            let ckRows = []
+            for(var j=0;j<bossGridH; j++){
+                ckRows[j]=PLATFORM;
+            }
+            bossGrid[i]=ckRows;
+        }
+
+        //hollow out the room
+        for(var i=1; i<bossGridW-1; i++){
+            for(var j=1;j<bossGridH-1; j++){
+                bossGrid[i][j]=VOID;
+            }
+        }
+
+        //put a platform in the middle
+        bossGrid[Math.floor(bossGridW/2)][4]=PLATFORM;
+
+        // Update the respawns point to some place far to the right
+        this.resetX = roomX + Math.floor(bossGridW/2) * UNITSIZE + HALFUNIT;
+        this.resetY = UNITSIZE * 2;
+
+        console.log('bossGrid',bossGrid);
+        // Instantiate the grid
+        for(var i=0; i<bossGrid.length; i++) {
+            for (var j = 0; j < bossGrid[0].length; j++) {
+                if(this.getGridAt(bossGrid,i,j) === PLATFORM){
+                    let P = this.add.sprite(roomX+(i*UNITSIZE),j*UNITSIZE,'platform');
+                    P.setOrigin(0);
+                    this.platforms.add(P);
+                }
+            }
+        }
 
 
+        // Move the player to the new reset point. Build the room here
+        this.player.x = this.resetX;
+        this.player.y = this.resetY;
 
-    startEnemies = function(){
-        this.enemyTimer = this.time.addEvent({
-            delay: 5000,                // ms
-            callback: this.makeEnemy,
-            //args: [],
-            callbackScope: this,
-            loop: true
-        });
+        this.boss = new Boss(this,roomX+(W/2),H/2);
+
     }
 
-    makeShooter(x,y){
-        let shooter = new Shooter(this,x,y,);
-        shooter.angle = -90;
-        // shooter.rotation = 90;
-        this.shooters.add(shooter);
+
+
+    makeShooter(x,y,angle=null){
+        let P = new Shooter(this, x, y);
+
+        if(!angle){
+            let chooseAngle = Phaser.Math.Between(0,3);
+            if(chooseAngle===0){
+                P.angle = 180;
+            }else if(chooseAngle===1){
+                P.angle = -90;
+            }else if(chooseAngle===2){
+                P.angle = 90;
+            }else{
+                P.angle = 0;
+            }
+        }else{
+            P.angle = angle;
+        }
+        this.shooters.add(P);
+        this.cleanup.add(P);
+
+        return P;
     }
 
-    makeEnemy(x,y){
-        if(this.enemies.countActive(true) >= MAXENEMIES) return false;
-        let enemy = new Enemy(this,x,y);
+    makeSpike(x,y){
+        let S = new Spikes(this, x,y);
+        this.spikes.add(S);
+        this.cleanup.add(S);
+        return S;
+    }
+
+    makeBlocker(x,y){
+        let B = this.add.sprite(x,y,'blueSquare');
+        B.setOrigin(0);
+        B.setAlpha(0);
+        this.emyBlockers.add(B);
+        this.cleanup.add(B);
+        return B;
+    }
+
+    makeBlockImage(x,y){
+        let P = this.add.image(x,y,'platform');
+        P.setOrigin(0);
+        this.platformImages.add(P);
+        this.cleanup.add(P);
     }
 
     collidePlatform(player,platform){
 
     }
+
     bulletHitPlatform(bullet,platform){
         bullet.destroy();
     }
+
     playerLoseLife(){
         if(this.GAMEOVER) return false;
         if(this.restart) return false;
@@ -393,18 +474,7 @@ class GameScene extends Phaser.Scene {
             return false;
         }
 
-        if(player.y <= enemy.y-UNITSIZE){
-            this.shakeIt();
-            player.body.velocity.y = ACCELERATION *-1;
-            enemy.kill();
-            this.soundDropFall.play();
-            for(let i=0;i<3;i++){
-                new Coin(this,enemy.x,enemy.y);
-            }
-
-        }else if(player.y >= enemy.y-UNITSIZE/4){
-            this.playerLoseLife();
-        }
+        enemy.hit(player);
 
     }
 
@@ -453,7 +523,6 @@ class GameScene extends Phaser.Scene {
         this.shakeCooldown-=delta;
 
         let onTheGround = this.player.body.touching.down;
-
         if (onTheGround) {
             // Jump when the player is touching the ground and the up arrow is pressed
             if(jumpInputIsActive()){
@@ -474,22 +543,29 @@ class GameScene extends Phaser.Scene {
             this.player.body.acceleration.x = 0;
         }
 
+        // STATE CODE
+        if(this.playState===PLAYSTATE_BOSS){
+            if(this.boss != undefined){
+                this.boss.update(time,delta);
+            }
+        }else{
+            for(let i=0;i<this.respawns.length;i++){
+                if(this.player.x > this.respawns[i][0]){
+                    this.resetX = this.respawns[i][0];
+                    this.resetY = this.respawns[i][1];
+                    this.respawns.splice(i,1);
+                }
+            }
 
-        for(let i=0;i<this.respawns.length;i++){
-            if(this.player.x > this.respawns[i][0]){
-                this.resetX = this.respawns[i][0];
-                this.resetY = this.respawns[i][1];
-                this.respawns.splice(i,1);
+            if(this.player.x>=this.nextChunkTrigger){
+                this.nextChunkTrigger+=W/2;
+                for(let i=0;i<4;i++){
+                    let setRespawn = (i===0)
+                    this.makeChunk(setRespawn);
+                }
             }
         }
 
-        if(this.player.x>=this.nextChunkTrigger){
-            this.nextChunkTrigger+=W/2;
-            for(let i=0;i<4;i++){
-                let setRespawn = (i===0)
-                this.makeChunk(setRespawn);
-            }
-        }
 
         // update groups
         let eArray = this.enemies.getChildren();

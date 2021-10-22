@@ -1,5 +1,5 @@
 class Coin extends Phaser.Physics.Arcade.Sprite {
-    constructor(scene, x, y, faction=1, config = {}) {
+    constructor(scene, x, y, config = {}) {
         super(scene, x, y, config.hasOwnProperty('img') ? config.img : 'coin');
         scene.add.existing(this);
         scene.physics.add.existing(this);
