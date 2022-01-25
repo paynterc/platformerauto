@@ -311,24 +311,22 @@ class GameScene extends Phaser.Scene {
 			return true;
 		}
 
-
-        if(Phaser.Math.Between(1,50)===1 && this.chunkX>0){
-
-            let modFloor = Phaser.Math.Between(0,6) - 3;
-            this.floorLvl += modFloor;
-
-            for(let i=0;i<6;i++){
-                let pltLvl = (this.floorLvl*UNITSIZE > this.cameras.main.height-64) ? this.cameras.main.height-64 : this.floorLvl*UNITSIZE;
-//                 let platform = new Platform(this,this.chunkX + (192 * i), pltLvl);
-                let platform = new Mushroom(this,this.chunkX + (120 * i),pltLvl);
-//                 this.specialPlatforms.add(platform);
-                this.cleanup.add(platform);
-            }
-
-            this.chunkX+=(this.chunkW * 2) * UNITSIZE;
-            return true;
-
-        }
+// CHASM WITH PLATFORMS
+//        if(Phaser.Math.Between(1,50)===1 && this.chunkX>0){
+//
+//            let modFloor = Phaser.Math.Between(0,6) - 3;
+//            this.floorLvl += modFloor;
+//
+//            for(let i=0;i<6;i++){
+//                let pltLvl = (this.floorLvl*UNITSIZE > this.cameras.main.height-64) ? this.cameras.main.height-64 : this.floorLvl*UNITSIZE;
+//                let platform = new Mushroom(this,this.chunkX + (120 * i),pltLvl);
+//                this.cleanup.add(platform);
+//            }
+//
+//            this.chunkX+=(this.chunkW * 2) * UNITSIZE;
+//            return true;
+//
+//        }
 
         //make a grid
         let ckGrid = [];
@@ -441,7 +439,7 @@ class GameScene extends Phaser.Scene {
 
                         }else if(Phaser.Math.Between(1,150)===1 && j!=firstFloorLvl && ckGrid[i][Math.max(j-1,0)] === VOID){
                             
-                            this.makePortalPair(this.chunkX+(i*UNITSIZE), Math.max(j-1,0) * UNITSIZE);
+//                            this.makePortalPair(this.chunkX+(i*UNITSIZE), Math.max(j-1,0) * UNITSIZE);
                         
                         }
 
@@ -476,55 +474,60 @@ class GameScene extends Phaser.Scene {
                             let emy1roll = null;
 
                             if(roll<=5){
-                                emy1roll = Phaser.Math.Between(1,6);
-                                switch (emy1roll) {
-                                    case 1:
-                                        new Enemy(this, this.chunkX+(i*UNITSIZE),-128);
-                                        break;
-                                    case 2:
-                                        new Hellspawn(this, this.chunkX+(i*UNITSIZE),-128,1,{scale:2,bumpFrequency:24});
-                                        break;
-                                    case 3:
-                                        new OliverBlue(this, this.chunkX+(i*UNITSIZE),-128);
-                                        break;
-                                    case 4:
-                                        let arrowSpd = Phaser.Math.Between(500,800);
-                                        let flipper = Phaser.Math.Between(0,1);
-                                        new Archer(this,this.chunkX+(i*UNITSIZE),-128,1,{'img':'parkerArcher','arrowSpd':arrowSpd,'flipX':flipper});
-                                        break
-                                    case 5:
-                                        new Spawner(this, this.chunkX+(i*UNITSIZE),-128,1,{'img':'kahlessRainbow','anmIdle':'kahlessRainbow',bumpFrequency:24});
-                                        break;
-                                  	case 6:
-                                        new Enemy(this, this.chunkX+(i*UNITSIZE),-128,1,{img:'slimeBlob',anmIdle:'slimeBlobWalk',animWalk:'slimeBlobWalk',defaultAcc:5,maxVelocity:10,bumpFrequency:24,bdyW:16,bdyH:8,bdyOx:6,bdyOy:24});
-                                        break;  
-                                }
+                                new Enemy(this, this.chunkX+(i*UNITSIZE),-128);
+
+//                                emy1roll = Phaser.Math.Between(1,6);
+//                                switch (emy1roll) {
+//                                    case 1:
+//                                        new Enemy(this, this.chunkX+(i*UNITSIZE),-128);
+//                                        break;
+//                                    case 2:
+//                                        new Hellspawn(this, this.chunkX+(i*UNITSIZE),-128,1,{scale:2,bumpFrequency:24});
+//                                        break;
+//                                    case 3:
+//                                        new OliverBlue(this, this.chunkX+(i*UNITSIZE),-128);
+//                                        break;
+//                                    case 4:
+//                                        let arrowSpd = Phaser.Math.Between(500,800);
+//                                        let flipper = Phaser.Math.Between(0,1);
+//                                        new Archer(this,this.chunkX+(i*UNITSIZE),-128,1,{'img':'parkerArcher','arrowSpd':arrowSpd,'flipX':flipper});
+//                                        break
+//                                    case 5:
+//                                        new Spawner(this, this.chunkX+(i*UNITSIZE),-128,1,{'img':'kahlessRainbow','anmIdle':'kahlessRainbow',bumpFrequency:24});
+//                                        break;
+//                                  	case 6:
+//                                        new Enemy(this, this.chunkX+(i*UNITSIZE),-128,1,{img:'slimeBlob',anmIdle:'slimeBlobWalk',animWalk:'slimeBlobWalk',defaultAcc:5,maxVelocity:10,bumpFrequency:24,bdyW:16,bdyH:8,bdyOx:6,bdyOy:24});
+//                                        break;
+//                                }
 
                             }else if(roll>=5 && roll<=10){
-                                emy1roll = Phaser.Math.Between(1,6);
-                                switch (emy1roll) {
-                                    case 1,2:
-                                        new GusGuy(this, this.chunkX+(i*UNITSIZE),(j-2)*UNITSIZE, 1,{'img':'gusguy'});
-                                        break;
-                                    case 3,4:
-                                        new EnemyFly(this, this.chunkX+(i*UNITSIZE),(j-2)*UNITSIZE);
-                                        break;
-                                    case 5:
-                                        new Ghost(this, this.chunkX+(i*UNITSIZE),(j-2)*UNITSIZE,1,{'img':'ottoGhost'});
-                                        break;
-                                    case 4:
-;
-                                }
+                                new EnemyFly(this, this.chunkX+(i*UNITSIZE),(j-2)*UNITSIZE);
+
+
+//                                emy1roll = Phaser.Math.Between(1,6);
+//                                switch (emy1roll) {
+//                                    case 1,2:
+//                                        new GusGuy(this, this.chunkX+(i*UNITSIZE),(j-2)*UNITSIZE, 1,{'img':'gusguy'});
+//                                        break;
+//                                    case 3,4:
+//                                        new EnemyFly(this, this.chunkX+(i*UNITSIZE),(j-2)*UNITSIZE);
+//                                        break;
+//                                    case 5:
+//                                        new Ghost(this, this.chunkX+(i*UNITSIZE),(j-2)*UNITSIZE,1,{'img':'ottoGhost'});
+//                                        break;
+//                                    case 4:
+//;
+//                                }
 
 
                             }else if(roll==11){
-                            	if(Phaser.Math.Between(1,2)===2){
-                            		new Commander(this, this.chunkX+(i*UNITSIZE),-512,1,{'img':'commander'});
-                            	}else{
-                            		new HammerGiant(this, this.chunkX+(i*UNITSIZE),-512,1,{img:'rockHammerGuy',scale:2});
-                            	}
+//                            	if(Phaser.Math.Between(1,2)===2){
+//                            		new Commander(this, this.chunkX+(i*UNITSIZE),-512,1,{'img':'commander'});
+//                            	}else{
+//                            		new HammerGiant(this, this.chunkX+(i*UNITSIZE),-512,1,{img:'rockHammerGuy',scale:2});
+//                            	}
                             }else if(roll==12){
-								new Mushroom(this,this.chunkX+(i*UNITSIZE),Math.max(cellAbove*UNITSIZE - (Phaser.Math.Between(32,256)),0),1,{'img':'calliopeMushroom'});
+//								new Mushroom(this,this.chunkX+(i*UNITSIZE),Math.max(cellAbove*UNITSIZE - (Phaser.Math.Between(32,256)),0),1,{'img':'calliopeMushroom'});
 
                             }
                         }

@@ -108,13 +108,13 @@ class BootScene extends Phaser.Scene{
         chunksToFinish = 15;
         
         hats = [
-			{img:'gnomeHat',price:10,hasHat:false,hatClass:"Hat",descrip:"A nice red hat."},
-			{img:'topHat',price:25,hasHat:false,hatClass:"HatTop",descrip:"Chance to spawn extra coins."},
-			{img:'hornHelmet',price:25,hasHat:false,hatClass:"HatHornHelmet",descrip:"Blocks arrows."},
-			{img:'alienHat',price:25,hasHat:false,hatClass:"Hat",descrip:"Alien Hat. Reduced gravity.",anm:"alienHat"},
-			{img:'cakeHat',price:25,hasHat:false,hatClass:"Hat",descrip:"Extra Life.",anm:"cakeHat"},
-			{img:'yigaHat',price:25,hasHat:false,hatClass:"Hat",descrip:"Yiga Clan Mask. Protection from spikes.",anm:"yigaHat",xoff:18,yoff:-40},
-			{img:'headband',price:25,hasHat:false,hatClass:"Hat",descrip:"Headband. Forward dash.",yoff:-24},
+//			{img:'gnomeHat',price:10,hasHat:false,hatClass:"Hat",descrip:"A nice red hat."},
+//			{img:'topHat',price:25,hasHat:false,hatClass:"HatTop",descrip:"Chance to spawn extra coins."},
+//			{img:'hornHelmet',price:25,hasHat:false,hatClass:"HatHornHelmet",descrip:"Blocks arrows."},
+//			{img:'alienHat',price:25,hasHat:false,hatClass:"Hat",descrip:"Alien Hat. Reduced gravity.",anm:"alienHat"},
+//			{img:'cakeHat',price:25,hasHat:false,hatClass:"Hat",descrip:"Extra Life.",anm:"cakeHat"},
+//			{img:'yigaHat',price:25,hasHat:false,hatClass:"Hat",descrip:"Yiga Clan Mask. Protection from spikes.",anm:"yigaHat",xoff:18,yoff:-40},
+//			{img:'headband',price:25,hasHat:false,hatClass:"Hat",descrip:"Headband. Forward dash.",yoff:-24},
 // 			{img:'vikingHat',price:100,hasHat:false,hatClass:"HatHelmet",descrip:"Protection from falling eggs."},
 // 			{img:'spikes',price:100,hasHat:false,hatClass:"Hat",descrip:"???"},
 
