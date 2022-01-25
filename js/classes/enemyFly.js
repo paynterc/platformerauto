@@ -21,9 +21,11 @@ class EnemyFly extends Enemy {
         this.anmHit = 'emyYellowFly';
         this.anmAttack = 'emyYellowFly';
         this.anmDie = 'emyYellowDie';
+        this.play(this.anmWalk);
 
-        this.nextShoot = 0;
-        this.myDelay = 5000;
+
+        this.myDelay = 600;
+        this.nextShoot = this.myDelay;
     }
 
     startMovement(){
@@ -36,13 +38,13 @@ class EnemyFly extends Enemy {
 
     walk(time,delta){
         this.myState = STATE_EN_MOVE;
-        if(this.y<0){
-            this.y=UNITSIZE;
-        }
+//         if(this.y<0){
+//             this.y=UNITSIZE;
+//         }
 
-            if(this.anmWalk){
-                if(this.anims.currentAnim.key != this.anmWalk) this.play(this.anmWalk);
-            }
+        if(this.anmWalk){
+            if(this.anims.currentAnim && this.anims.currentAnim.key != this.anmWalk) this.play(this.anmWalk);
+        }
 
         if(this.body.touching.right){
             this.body.acceleration.x = this.defaultAcc * -1;
@@ -58,16 +60,18 @@ class EnemyFly extends Enemy {
         }
 
         if(this.myScene.flyTween){
-            this.body.velocity.y = (this.defaultVelocityY *-1) + this.myScene.flyTween.getValue();
+			if(this.y<0){
+				this.body.velocity.y=0;
+			}else{
+            	this.body.velocity.y = (this.defaultVelocityY *-1) + this.myScene.flyTween.getValue();
+			}
         }
 
-        if(this.nextShoot===0){
-            this.nextShoot = time;
-        }
-        if(time>this.nextShoot){
-            this.nextShoot+=this.myDelay;
-            this.shoot();
-        }
+		this.nextShoot--;
+		if(this.nextShoot<1){
+			this.nextShoot = this.myDelay;
+			this.shoot();
+		}
 
     }
 

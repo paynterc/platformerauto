@@ -1,4 +1,4 @@
-var upKey, leftKey, rightKey, downKey, attKey, spaceKey, activePointer, centerX, centerY, defaultVolume, animConfigs;
+var upKey, leftKey, rightKey, downKey, attKey, spaceKey, activePointer, centerX, centerY, defaultVolume, animConfigs, hatsDb, hats, curHat, score, lives, level, chunksToFinish;
 const MAX_SPEED = 400; // pixels/second
 const DRAG = 1000; // pixels/second
 const GRAVITY = 2600; // pixels/second/second
@@ -12,6 +12,7 @@ const W = 1280;
 const H = 640;
 const VOID = 0;
 const PLATFORM = 1;
+const SAFETIME = 100;
 
 const STATE_EN_IDLE = 0;
 const STATE_EN_MOVE = 1;
@@ -19,6 +20,10 @@ const STATE_EN_HIT = 2;
 const STATE_EN_ATTACK = 3;
 const STATE_EN_JUMP = 4;
 const STATE_EN_DIE = 5;
+
+const STATE_PLATFORM_SOLID = 0;
+const STATE_PLATFORM_PHASE = 1;
+const STATE_PLATFORM_IDLE = 2;
 
 const PLAYSTATE_MAIN = 0;
 const PLAYSTATE_BOSS = 1;
@@ -63,12 +68,13 @@ var config = {
     },
     parent: 'ph_game',
     backgroundColor: '#000000',
-    scene: [BootScene,MenuScene,GameScene,SettingsScene,HudScene],
+    scene: [BootScene,MenuScene,GameScene,SettingsScene,HudScene,CreditScene,HoorayScene],
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { y: 2600 },
-            debug: false,
+//             gravity: { y: 2600 },
+            fps: 260,
+            debug:false,
         }
     },
 };

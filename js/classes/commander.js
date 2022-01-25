@@ -6,30 +6,32 @@ class Commander extends Enemy {
         // Override this
         this.defaultAcc = 5;
         this.hp=10;
-        this.body.pushable=false;
         this.anmIdle = 'commanderWalk';
         this.anmWalk = 'commanderWalk';
         this.anmRun = 'commanderWalk';
         this.anmHit = 'commanderWalk';
         this.anmAttack = 'commanderAttack1';
         this.anmDie = 'commanderWalk';
-
+        this.play('commanderWalk');
         this.body.setSize(128,128);
         this.body.setOffset(64,128);
 
         this.nextShoot = 0;
         this.myDelay = 5000;
         this.hitSoundDelay=100;
+		
 
         this.myBumpFrequency = 100;
         this.myBumpTimer=this.myBumpFrequency;
+
+
     }
 
 
 
     walk(time,delta){
         this.myState = STATE_EN_MOVE;
-        if(this.anmWalk && this.anims.currentAnim.key != this.anmWalk){
+        if(this.anmWalk && this.anims.currentAnim && this.anims.currentAnim.key != this.anmWalk){
             this.play(this.anmWalk);
         }
         if(this.myBumpTimer<1){
@@ -61,10 +63,10 @@ class Commander extends Enemy {
     attack(){
         this.myState = STATE_EN_ATTACK;
         this.body.velocity.x === 0
-        if(this.anims.currentAnim.key != this.anmAttack){
+        if(this.anmAttack && this.anims.currentAnim && this.anims.currentAnim.key != this.anmAttack){
             this.play(this.anmAttack);
         }
-        if(this.anims.currentFrame.index === this.anims.getTotalFrames() -1 ){
+        if(this.anims.currentFrame && this.anims.currentFrame.index === this.anims.getTotalFrames() -1 ){
             this.myState = STATE_EN_MOVE;
         }
     }
@@ -72,30 +74,28 @@ class Commander extends Enemy {
     hit(player){
         if(this.hitSoundDelay<1){
             this.hitSoundDelay=100;
-            this.myScene.soundDropFall.play();
-            for(let i=0;i<30;i++){
-                new Coin(this.myScene,this.x,this.y);
-            }
+
+			if(player.y <= this.y){
+
+            	this.myScene.soundDropFall.play();
+            	new Coin(this.myScene,this.x,this.y);
+				this.myScene.shakeIt();
+	//             player.body.velocity.y = ACCELERATION *-1;
+
+
+				this.hp-=1;
+				if(this.hp<1){
+					this.kill();
+					this.myScene.soundDropFall.play();
+					for(let i=0;i<3;i++){
+						new Coin(this.myScene,this.x,this.y);
+					}
+				}
+
+			}
         }
-        this.body.velocity.y = -100;
-        if(player.y <= this.y-128){
-
-
-            this.myScene.shakeIt();
-            player.body.velocity.y = ACCELERATION *-1;
-
-
-            this.hp-=1;
-            if(this.hp<1){
-                this.kill();
-                this.myScene.soundDropFall.play();
-                for(let i=0;i<3;i++){
-                    new Coin(this.myScene,this.x,this.y);
-                }
-            }
-
-
-        }else if(player.y >= this.y){
+        
+		if(player.y >= this.y){
             this.myScene.playerLoseLife();
         }
 
@@ -105,6 +105,7 @@ class Commander extends Enemy {
         if(this.hitSoundDelay>0){
             this.hitSoundDelay--;
         }
+        
     }
 
 }

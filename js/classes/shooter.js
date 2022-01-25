@@ -4,24 +4,36 @@ class Shooter extends Phaser.Physics.Arcade.Sprite {
         scene.add.existing(this);
 
         this.myScene = scene;
-        this.myDelay = 2000;
-        this.nextShoot = 0;
         this.initSpeed=128;
+        
+//         this.myDelay = 2000;
+//         this.nextShoot = 0;
+        
+        this.myDelay = 250;
+        this.nextShoot = this.myDelay;
+        
+        
     }
 
     update(time,delta){
-        if(this.nextShoot===0){
-            this.nextShoot = time;
-        }
-        if(time>this.nextShoot){
-            this.nextShoot+=this.myDelay;
-            this.shoot();
-        }
+//         if(this.nextShoot===0){
+//             this.nextShoot = time;
+//         }
+//         if(time>this.nextShoot){
+//             this.nextShoot+=this.myDelay;
+//             this.shoot();
+//         }
+		this.nextShoot--;
+		if(this.nextShoot<1){
+			this.nextShoot = this.myDelay;
+			this.shoot();
+		}
+
     }
 
     shoot(){
 
-        let bullet = new Bullet(this.myScene,this.x,this.y,this.rotation,{anm:'fireball'});
+        let bullet = new Bullet(this.myScene,this.x,this.y,this.angle,{anm:'fireball'});
 
     }
 

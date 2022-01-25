@@ -11,10 +11,11 @@ class Coin extends Phaser.Physics.Arcade.Sprite {
         // this.body.velocity.x = Phaser.Math.Between(-100, 100);
         this.body.setBounce(0.2);
         this.body.drag.setTo(10, 0); // x, y
+        this.body.setGravityY(GRAVITY);
 
         this.addGold = 1;
         this.depth = 100000;
-        this.cooldown = 1000;
+        this.cooldown = 500;
 
         scene.loot.add(this);
         scene.cleanup.add(this);
