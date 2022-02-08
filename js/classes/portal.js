@@ -12,8 +12,14 @@ class Portal extends Phaser.GameObjects.Sprite {
         this.twin=null;
         this.coolDownTime=200;
         this.coolDownTimer=0;
+        if(config.hasOwnProperty('onExit')){
+            this.onExit = config.onExit;
+        }
         
-        
+	}
+
+	setTwin(obj){
+        this.twin = obj;
 	}
 	
 	update(time,delta){
@@ -25,6 +31,10 @@ class Portal extends Phaser.GameObjects.Sprite {
 			this.alpha = 1;
 		}
 		
+	}
+
+	onExit(){
+
 	}
 
 }

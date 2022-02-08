@@ -38,7 +38,7 @@ class Bullet extends Phaser.Physics.Arcade.Sprite {
         }
 
         this.init();
-
+        this.setDepth(1000);
         myGroup.add(this);
 
     }

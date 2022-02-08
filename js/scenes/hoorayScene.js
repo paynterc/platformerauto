@@ -39,14 +39,16 @@ class HoorayScene extends Phaser.Scene{
 		tint: ['0xFC7E7E','0xFCD77E','0xFCF87E','0xAAFC7E','0x7EFCDD','0x7EA0FC','0xBD7EFC','0xffffff']
 		}
 		);
-		
+
+        this.anims.create(animConfigs.emyIdle);
     	this.anims.create(animConfigs.greenDotIdle);
+
     	this.anims.create(animConfigs.alienHat);
         this.anims.create(animConfigs.cakeHat);
         this.anims.create(animConfigs.yigaHat);
     	
-		this.imgSpr = this.add.sprite(W/2,H/2,'greenDotIdle').setScale(4);
-		this.imgSpr.play('greenDotIdle');
+		this.imgSpr = this.add.sprite(W/2,H/2,curHero.img).setScale(4);
+		this.imgSpr.play(curHero.anmIdl);
 		
         if(curHat){
         	let xoff = curHat == 'yigaHat' ? 72 : 0;

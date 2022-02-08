@@ -32,6 +32,9 @@ class BootScene extends Phaser.Scene{
         this.load.image('vikingHat', 'img/hats/VikingHelmet.png');
         this.load.image('hornHelmet', 'img/hats/horn knight helmet32x.png');
         this.load.image('headband', 'img/hats/headband.png');
+        this.load.image('tree', 'img/Tree2.png');
+        this.load.image('door', 'img/door.png');
+        this.load.image('minidoor', 'img/minidoor.png');
 
         this.load.spritesheet('fireball', 'img/fireball.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('greenDotIdle', 'img/GreenDotIdle.png',{ frameWidth: 32, frameHeight: 32 });
@@ -47,7 +50,8 @@ class BootScene extends Phaser.Scene{
         this.load.spritesheet('oliverBlue', 'img/Oliverblue2.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('ottoGhost', 'img/OttoGhost2.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('parkerArcher', 'img/Parker_archerKnight32.png',{ frameWidth: 36, frameHeight: 36 });
-        this.load.spritesheet('mountains', 'img/mountains.png',{ frameWidth: 128, frameHeight: 128 });
+        this.load.spritesheet('mountains1', 'img/mountains1.png',{ frameWidth: 128, frameHeight: 128 });
+        this.load.spritesheet('mountains2', 'img/mountains2.png',{ frameWidth: 128, frameHeight: 128 });
         this.load.spritesheet('kahlessRainbow', 'img/Kahless_Rainbow64_12fps.png',{ frameWidth: 64, frameHeight: 64 });
         this.load.spritesheet('ozzieYouDied', 'img/Ozzie_YouDied.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('calliopeMushroom', 'img/Mushroom2-40.png',{ frameWidth: 40, frameHeight: 40 });
@@ -63,6 +67,16 @@ class BootScene extends Phaser.Scene{
         this.load.spritesheet('alienHat', 'img/hats/alienHat.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('cakeHat', 'img/hats/cake.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('yigaHat', 'img/hats/bigYiga128.png',{ frameWidth: 128, frameHeight: 128 });
+        this.load.spritesheet('evilEyeball', 'img/evil_eyeball.png',{ frameWidth: 32, frameHeight: 32 });
+        this.load.spritesheet('bobTheBlob', 'img/bob_the_blob.png',{ frameWidth: 32, frameHeight: 32 });
+        this.load.spritesheet('bonyBoomBox', 'img/bony_the_boom_box.png',{ frameWidth: 32, frameHeight: 32 });
+        this.load.spritesheet('blueyWalk', 'img/Bluey.png',{ frameWidth: 32, frameHeight: 32 });
+        this.load.spritesheet('blueyDie', 'img/Bluey_DEATH.png',{ frameWidth: 32, frameHeight: 32 });
+        this.load.spritesheet('gusGrave', 'img/gus_the_grave.png',{ frameWidth: 32, frameHeight: 32 });
+        this.load.spritesheet('bobbyBomb', 'img/bobby_the_bomb.png',{ frameWidth: 32, frameHeight: 32 });
+        this.load.spritesheet('goblin', 'img/Goblin.png',{ frameWidth: 32, frameHeight: 32 });
+        this.load.spritesheet('greenie', 'img/Greenie.png',{ frameWidth: 32, frameHeight: 32 });
+        this.load.spritesheet('kapow', 'img/kapow.png',{ frameWidth: 128, frameHeight: 128 });
 
         
         
@@ -120,11 +134,119 @@ class BootScene extends Phaser.Scene{
 
         ];
 // 		hatsClone = hats.map(a => {return {...a}});
-
         curHat = null;
 
+        heroes = [
+            {img:'greenie',name:"Greenie",anmIdl:'greenieIdle',anmRun:'greenieWalk'},
+            {img:'emyIdle',name:"Red Dot",anmIdl:'emyIdle',anmRun:'emyWalk'},
+            {img:'blueyWalk',name:"Bluey",anmIdl:'blueyIdle',anmRun:'blueyWalk',anmDie:'blueyDie'}
+        ];
+        curHero = heroes[0];
+
         animConfigs = {};
-        
+
+        animConfigs.kapow = {
+            key: 'kapow',
+            frames: this.anims.generateFrameNumbers('kapow', { start: 0, end: 2, first: 0 }),
+            frameRate: 24,
+            repeat: 0
+        };
+        animConfigs.greenieIdle = {
+            key: 'greenieIdle',
+            frames: this.anims.generateFrameNumbers('greenie', { start: 0, end: 1, first: 0 }),
+            frameRate: 6,
+            repeat: -1
+        };
+        animConfigs.greenieWalk = {
+            key: 'greenieWalk',
+            frames: this.anims.generateFrameNumbers('greenie', { start: 2, end: 5, first: 2 }),
+            frameRate: 12,
+            repeat: -1
+        };
+        animConfigs.goblinAttack = {
+            key: 'goblinAttack',
+            frames: this.anims.generateFrameNumbers('goblin', { start: 0, end: 7, first: 0 }),
+            frameRate: 6,
+            repeat: -1
+        };
+
+        animConfigs.bobbyBombWalk = {
+            key: 'bobbyBombWalk',
+            frames: this.anims.generateFrameNumbers('bobbyBomb', { start: 1, end: 2, first: 1 }),
+            frameRate: 6,
+            repeat: -1
+        };
+
+        animConfigs.bobbyBombDie = {
+            key: 'bobbyBombDie',
+            frames: this.anims.generateFrameNumbers('bobbyBomb', { start: 3, end: 28, first: 3 }),
+            frameRate: 14,
+            repeat: 0
+        };
+        animConfigs.gusGrave = {
+            key: 'gusGrave',
+            frames: this.anims.generateFrameNumbers('gusGrave', { start: 0, end: 17, first: 0 }),
+            frameRate: 5,
+            repeat: 0
+        };
+        animConfigs.blueyIdle = {
+            key: 'blueyIdle',
+            frames: this.anims.generateFrameNumbers('blueyWalk', { start: 2, end: 3, first: 2 }),
+            frameRate: 4,
+            repeat: -1
+        };
+        animConfigs.blueyWalk = {
+            key: 'blueyWalk',
+            frames: this.anims.generateFrameNumbers('blueyWalk', { start: 0, end: 3, first: 0 }),
+            frameRate: 4,
+            repeat: -1
+        };
+        animConfigs.blueyDie = {
+            key: 'blueyDie',
+            frames: this.anims.generateFrameNumbers('blueyDie', { start: 0, end: 8, first: 0 }),
+            frameRate: 4,
+            repeat: -1
+        };
+
+        animConfigs.bonyIdle = {
+            key: 'bonyIdle',
+            frames: this.anims.generateFrameNumbers('bonyBoomBox', { start: 0, end: 1, first: 0 }),
+            frameRate: 2,
+            repeat: -1
+        };
+
+        animConfigs.bonyWalk = {
+            key: 'bonyWalk',
+            frames: this.anims.generateFrameNumbers('bonyBoomBox', { start: 2, end: 3, first: 2 }),
+            frameRate: 4,
+            repeat: -1
+        };
+
+        animConfigs.bonyDie = {
+            key: 'bonyDie',
+            frames: this.anims.generateFrameNumbers('bonyBoomBox', { start: 4, end: 18, first: 4 }),
+            frameRate: 5,
+            repeat: 0
+        };
+
+        animConfigs.bobTheBlobWalk = {
+            key: 'bobTheBlobWalk',
+            frames: this.anims.generateFrameNumbers('bobTheBlob', { start: 0, end: 3, first: 0 }),
+            frameRate: 2,
+            repeat: -1
+        };
+        animConfigs.bobTheBlobDie = {
+            key: 'bobTheBlobDie',
+            frames: this.anims.generateFrameNumbers('bobTheBlob', { start: 4, end: 18, first: 4 }),
+            frameRate: 12,
+            repeat: -1
+        };
+        animConfigs.evilEyeball = {
+            key: 'evilEyeball',
+            frames: this.anims.generateFrameNumbers('evilEyeball', { start: 0, end: 18, first: 0 }),
+            frameRate: 24,
+            repeat: -1
+        };
         animConfigs.greenDotIdle = {
             key: 'greenDotIdle',
             frames: this.anims.generateFrameNumbers('greenDotIdle', { start: 0, end: 1, first: 0 }),

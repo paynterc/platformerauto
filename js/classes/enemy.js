@@ -26,11 +26,12 @@ class Enemy extends Phaser.GameObjects.Sprite {
         this.defaultAcc = config.hasOwnProperty('defaultAcc') ? config.defaultAcc : 25;
         this.maxVelocity = config.hasOwnProperty('maxVelocity') ? config.maxVelocity : 50;
 
-        this.hp = 1;
+        this.hp = config.hasOwnProperty('hp') ? config.hp : 1;
         this.myAttackFrequency = 100;
         this.myBumpFrequency = config.hasOwnProperty('bumpFrequency') ? config.bumpFrequency : 3;
         this.canHitPlayer = true;// Let enemy not hit player initially. Set a timer to make it active.
         this.canHitPlayerTimer = 100;
+        this.damageOnImpact = true;// damages player if you don't land on top
 
         // Presets
         this.myAttackTimer = this.myAttackFrequency;
@@ -63,7 +64,9 @@ class Enemy extends Phaser.GameObjects.Sprite {
         this.anmHit = config.hasOwnProperty('anmHit') ? config.anmHit : null;
         this.anmAttack = config.hasOwnProperty('anmAttack') ? config.anmAttack : null;
         this.anmDie = config.hasOwnProperty('anmDie') ? config.anmDie : null;
-
+        if(config.hasOwnProperty('onDestroy')){
+            this.onDestroy = config.onDestroy;
+        }
 
         if(this.anmIdle) this.play(this.anmIdle);
         scene.enemies.add(this);
@@ -195,7 +198,7 @@ class Enemy extends Phaser.GameObjects.Sprite {
             }
 
 
-        }else if(player.y >= this.y-UNITSIZE/4){
+        }else if(player.y >= this.y-UNITSIZE/4 && this.damageOnImpact){
             this.myScene.playerLoseLife();
         }
     }
@@ -208,17 +211,27 @@ class Enemy extends Phaser.GameObjects.Sprite {
         this.myState = STATE_EN_DIE;
 
         if(this.anmDie){
-            this.body.velocity.x = 0;
-//             this.body.velocity.y = -75;
-            if(this.anmDie && this.anims.currentAnim && this.anims.currentAnim.key != this.anmDie){
-                this.play(this.anmDie);
-            }
-            if(this.anims.currentFrame && this.anims.currentFrame.index === this.anims.getTotalFrames()  ){
-                this.destroy();
-            }
+            // create a corpse object that you won't collide with
+            let corpse = new Corpse(this.myScene,this.x,this.y);
+            corpse.play(this.anmDie);
+            this.onDestroy();
+            this.destroy();
+//            this.body.velocity.x = 0;
+//            if(this.anmDie && this.anims.currentAnim && this.anims.currentAnim.key != this.anmDie){
+//                this.play(this.anmDie);
+//            }
+//            if(this.anims.currentFrame && this.anims.currentFrame.index === this.anims.getTotalFrames()  ){
+//                this.onDestroy();
+//                this.destroy();
+//            }
         }else{
+            this.onDestroy();
             this.destroy();
         }
+
+    }
+
+    onDestroy(){
 
     }
 

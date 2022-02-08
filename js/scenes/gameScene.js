@@ -8,8 +8,6 @@ class GameScene extends Phaser.Scene {
         this.chunkH = 20;
         this.playState = PLAYSTATE_MAIN;//main or boss
 
-
-
     }
     
     init(data){
@@ -50,7 +48,7 @@ class GameScene extends Phaser.Scene {
     create()
     {
         let that = this;
-        this.cameras.main.setBackgroundColor(0x000000);
+        this.cameras.main.setBackgroundColor(0x85f2ff);
         this.addAnimations();
 
 
@@ -63,6 +61,7 @@ class GameScene extends Phaser.Scene {
         this.reset = false;
         this.finished = false;
         this.playerDead = false;
+        this.madeMiniBossDoor = false;
         this.shakeCooldown = 0;
         this.floorLvl = 12;
         this.chunkX = 0;
@@ -78,13 +77,16 @@ class GameScene extends Phaser.Scene {
 
         this.addBackground();
 
-        this.player = this.physics.add.sprite(0+HALFUNIT, this.floorLvl * UNITSIZE - (UNITSIZE*2), 'greenDotIdle');
+        this.player = this.physics.add.sprite(0+HALFUNIT, this.floorLvl * UNITSIZE - (UNITSIZE*2), curHero.img);
         this.player.setBounce(0.2);
         this.player.setCollideWorldBounds(false);
         this.player.body.maxVelocity.setTo(MAX_SPEED, MAX_SPEED * 5); // x, y
         this.player.body.drag.setTo(DRAG, 0);
         this.player.body.pushable = true;
-        this.player.play('greenDotIdle');
+        this.player.depth = 100;
+        if(curHero.anmIdl != null){
+            this.player.play(curHero.anmIdl);
+        }
 
         if(curHat=="alienHat"){
         	this.player.setGravityY(800);
@@ -98,6 +100,8 @@ class GameScene extends Phaser.Scene {
 
         this.resetX = this.player.x;
         this.resetY = this.player.y;
+        this.resetXSave = this.resetX;
+        this.resetYSave = this.resetY;
         this.canDoubleJump = false;
 		this.dashTimer=0;
 		this.dashingTimer=0;
@@ -119,13 +123,18 @@ class GameScene extends Phaser.Scene {
         this.cleanup = this.add.group();
         this.specialPlatforms = this.physics.add.staticGroup();
         this.portals = this.physics.add.staticGroup();
+        this.bossDoors = this.physics.add.staticGroup();
         this.finish = this.physics.add.staticGroup();
+        this.corpses = this.add.group();
+        this.gates = this.add.group();
 
         // colliders
         this.physics.add.collider(this.player, this.platforms, this.collidePlatform,false,this);
         this.physics.add.overlap(this.player, this.loot, this.hitLoot,false,this);
         this.physics.add.overlap(this.player, this.portals, this.hitPortal,false,this);
+        this.physics.add.overlap(this.player, this.bossDoors, this.hitBossDoor,false,this);
         this.physics.add.collider(this.enemies, this.platforms);
+        this.physics.add.collider(this.enemies, this.gates);
         this.physics.add.collider(this.splatbullets, this.platforms, this.bulletHitPlatform,false,this);
         this.physics.add.collider(this.splatbullets, this.splatBulletShields, this.bulletHitShield,false,this);
         this.physics.add.collider(this.bullets, this.bulletShields, this.bulletHitShield,false,this);
@@ -138,6 +147,7 @@ class GameScene extends Phaser.Scene {
         this.physics.add.collider(this.player, this.spikes, this.hitSpike,false,this);
         this.physics.add.collider(this.player, this.specialPlatforms);
         this.physics.add.overlap(this.player, this.finish, this.finishReached,false,this);
+        this.physics.add.collider(this.player, this.gates);
 
 
 // controls
@@ -204,10 +214,11 @@ class GameScene extends Phaser.Scene {
 //         shield.body.setAllowGravity(false);
 //         shield.body.setImmovable(true);
 //         this.bulletShields.add(shield);
-
-//         new HammerGiant(this, this.player.x+128,this.player.y-128,1,{img:'rockHammerGuy',scale:2});
-//         new Enemy(this, this.player.x+128,this.player.y-128,1,{img:'slimeBlob',anmIdle:'slimeBlobWalk',animWalk:'slimeBlobWalk',defaultAcc:5,maxVelocity:10,bumpFrequency:24,bdyW:16,bdyH:8,bdyOx:6,bdyOy:24});
-// 		   new Archer(this,this.player.x+128,this.player.y-64);
+// 		   new BobTheBlob(this,this.player.x+128,this.player.y-64);
+// 		   new Goblin(this,this.player.x+128,this.player.y-64,1,{'flipX':Phaser.Math.Between(0,1)});
+// 		   new Goblin(this,this.player.x+128,this.player.y-64,1,{'flipX':Phaser.Math.Between(0,1)});
+//         new Enemy(this, this.player.x+128,this.player.y-128,1,{img:'bonyBoomBox',anmIdle:'bonyIdle',anmWalk:'bonyWalk',anmDie:'bonyDie'});
+// 		   new BobbyBomb(this,this.player.x+128,this.player.y-64);
 // 		   new HammerGiant(this,this.player.x+128,this.player.y-64,1,{img:'rockHammerGuy',scale:2});
 //         this.makeBossLvl1();
         
@@ -220,22 +231,23 @@ class GameScene extends Phaser.Scene {
     addBackground(){
         // Add your background images first! Images appear in the order you added them, back to front.
         // Create a tilesprite (x, y, width, height, key)
-//         this.bg0 = this.add.tileSprite(
-//             0,
-//             0,
-//             1280,
-//             640,
-//             'mountains_1280'
-//         ).setOrigin(0,0).setScrollFactor(0,0);
+         this.bg0 = this.add.tileSprite(
+             0,
+             0,
+             W,
+             H,
+             'mountains2'
+         ).setOrigin(0,0).setScale(W/128,H/128).setScrollFactor(.50,0);
 
          this.bg1 = this.add.tileSprite(
              0-W/2,
              0,
              W,
              H,
-             'mountains',
+             'mountains1',
              0
-         ).setOrigin(0,0).setScale(W/128,H/128).setScrollFactor(.75,0).setTint('0x153626');
+         ).setOrigin(0,0).setScale(W/128,H/128).setScrollFactor(.75,0);
+         //.setTint('0x153626');
          
 //         this.bg2 = this.add.tileSprite(
 //              0-this.cameras.main.width/2,
@@ -249,40 +261,38 @@ class GameScene extends Phaser.Scene {
 
     addAnimations()
     {
-        this.anims.create(animConfigs.fireball);
-        this.anims.create(animConfigs.emyIdle);
-        this.anims.create(animConfigs.emyHit);
-        this.anims.create(animConfigs.emyWalk);
-        this.anims.create(animConfigs.emyDie);
-        this.anims.create(animConfigs.coin);
-        this.anims.create(animConfigs.emyYellowFly);
-        this.anims.create(animConfigs.emyYellowDie);
-        this.anims.create(animConfigs.bossCrabWalk);
-        this.anims.create(animConfigs.watcherIdle);
-        this.anims.create(animConfigs.commanderWalk);
-        this.anims.create(animConfigs.commanderAttack1);
-        this.anims.create(animConfigs.gusGuyIdle);
-        this.anims.create(animConfigs.crownPhase);
-        this.anims.create(animConfigs.hellSpawnMove);
-        this.anims.create(animConfigs.hellSpawnDie);
-        this.anims.create(animConfigs.oliverBlueWalk);
-        this.anims.create(animConfigs.oliverBlueDie);
-        this.anims.create(animConfigs.ottoGhost);
-        this.anims.create(animConfigs.parkerArcher);
-        this.anims.create(animConfigs.kahlessRainbow);
-        this.anims.create(animConfigs.ozzieYouDied);
-        this.anims.create(animConfigs.mushroomIdle);
-        this.anims.create(animConfigs.mushroomBuilding);
-        this.anims.create(animConfigs.rockHammerWalk);
-        this.anims.create(animConfigs.rockHammerAttack);
-        this.anims.create(animConfigs.rockFire);
-        this.anims.create(animConfigs.slimeBlobWalk);
-        this.anims.create(animConfigs.greenDotIdle);
-        this.anims.create(animConfigs.greenDotRun);
-        this.anims.create(animConfigs.kahLessSquareWalk);
-        this.anims.create(animConfigs.alienHat);
-        this.anims.create(animConfigs.cakeHat);
-        this.anims.create(animConfigs.yigaHat);
+        let that = this;
+        Object.values(animConfigs).forEach(val => {
+          that.anims.create(val);
+        });
+//        this.anims.create(animConfigs.fireball);
+//        this.anims.create(animConfigs.emyIdle);
+//        this.anims.create(animConfigs.emyHit);
+//        this.anims.create(animConfigs.emyWalk);
+//        this.anims.create(animConfigs.emyDie);
+//        this.anims.create(animConfigs.coin);
+//        this.anims.create(animConfigs.emyYellowFly);
+//        this.anims.create(animConfigs.emyYellowDie);
+//        this.anims.create(animConfigs.bossCrabWalk);
+//
+//        this.anims.create(animConfigs.evilEyeball);
+//        this.anims.create(animConfigs.bobTheBlobWalk);
+//        this.anims.create(animConfigs.bobTheBlobDie);
+//
+//        this.anims.create(animConfigs.bonyIdle);
+//        this.anims.create(animConfigs.bonyWalk);
+//        this.anims.create(animConfigs.bonyDie);
+//
+//        this.anims.create(animConfigs.blueyIdle);
+//        this.anims.create(animConfigs.blueyWalk);
+//        this.anims.create(animConfigs.blueyDie);
+//
+//        this.anims.create(animConfigs.bobbyBombWalk);
+//        this.anims.create(animConfigs.bobbyBombDie);
+//
+//        this.anims.create(animConfigs.goblinAttack);
+//        this.anims.create(animConfigs.greenieIdle);
+//        this.anims.create(animConfigs.greenieWalk);
 
     }
 
@@ -466,39 +476,55 @@ class GameScene extends Phaser.Scene {
                         }
 
 
+
                         /// Spawn enemy
                         let cellAbove = Math.max(j-1,0);
                         if(ckGrid[i][cellAbove] === VOID && this.chunkX>0){
+                            if(!this.madeMiniBossDoor){
+                                this.madeMiniBossDoor = true;
+                                new BossDoor(this,this.chunkX + (i * UNITSIZE) - UNITSIZE, j * UNITSIZE - UNITSIZE );
+                            }
+                            // chance for tree
+                            let treeroll = Phaser.Math.Between(1,10);
+                            if(treeroll==10){
+                                let tree = this.add.sprite( this.chunkX + (i * UNITSIZE) - UNITSIZE, j * UNITSIZE - 127,'tree');
+                                tree.setOrigin(0,0);
+                                tree.depth = 10;
+
+//                                let mark = this.add.sprite( this.chunkX + (i * UNITSIZE), j * UNITSIZE,'hero');
+//                                mark.setOrigin(0,0);
+//                                mark.depth = 5000;
+                            }
+
+
                             // chance for enemy spawn
                             let roll = Phaser.Math.Between(1,100);
                             let emy1roll = null;
 
                             if(roll<=5){
-                                new Enemy(this, this.chunkX+(i*UNITSIZE),-128);
+//                                new Enemy(this, this.chunkX+(i*UNITSIZE),-128);
 
-//                                emy1roll = Phaser.Math.Between(1,6);
-//                                switch (emy1roll) {
-//                                    case 1:
-//                                        new Enemy(this, this.chunkX+(i*UNITSIZE),-128);
-//                                        break;
-//                                    case 2:
-//                                        new Hellspawn(this, this.chunkX+(i*UNITSIZE),-128,1,{scale:2,bumpFrequency:24});
-//                                        break;
-//                                    case 3:
-//                                        new OliverBlue(this, this.chunkX+(i*UNITSIZE),-128);
-//                                        break;
-//                                    case 4:
-//                                        let arrowSpd = Phaser.Math.Between(500,800);
-//                                        let flipper = Phaser.Math.Between(0,1);
-//                                        new Archer(this,this.chunkX+(i*UNITSIZE),-128,1,{'img':'parkerArcher','arrowSpd':arrowSpd,'flipX':flipper});
-//                                        break
-//                                    case 5:
-//                                        new Spawner(this, this.chunkX+(i*UNITSIZE),-128,1,{'img':'kahlessRainbow','anmIdle':'kahlessRainbow',bumpFrequency:24});
-//                                        break;
-//                                  	case 6:
-//                                        new Enemy(this, this.chunkX+(i*UNITSIZE),-128,1,{img:'slimeBlob',anmIdle:'slimeBlobWalk',animWalk:'slimeBlobWalk',defaultAcc:5,maxVelocity:10,bumpFrequency:24,bdyW:16,bdyH:8,bdyOx:6,bdyOy:24});
-//                                        break;
-//                                }
+                                emy1roll = Phaser.Math.Between(1,6);
+                                switch (emy1roll) {
+                                    case 1:
+                                        new Enemy(this, this.chunkX+(i*UNITSIZE),-128);
+                                        break;
+                                    case 2:
+                                        new EvilEyeball(this, this.chunkX+(i*UNITSIZE),-128);
+                                        break;
+                                    case 3:
+                                        new BobTheBlob(this, this.chunkX+(i*UNITSIZE),-128);
+                                        break;
+                                    case 4:
+                                        new Enemy(this, this.chunkX+(i*UNITSIZE),-128,1,{img:'bonyBoomBox',anmIdle:'bonyIdle',anmWalk:'bonyWalk',anmDie:'bonyDie'});
+                                        break;
+                                    case 5:
+                                        new BobbyBomb(this, this.chunkX+(i*UNITSIZE),-128);
+                                        break;
+                                    case 6:
+                                        let goblin = new Goblin(this, this.chunkX+(i*UNITSIZE),-64,1,{'flipX':Phaser.Math.Between(0,1)});
+                                        break;
+                                    }
 
                             }else if(roll>=5 && roll<=10){
                                 new EnemyFly(this, this.chunkX+(i*UNITSIZE),(j-2)*UNITSIZE);
@@ -604,6 +630,116 @@ class GameScene extends Phaser.Scene {
 
     }
 
+    makeMiniBossLvl1(door){
+        this.playState=PLAYSTATE_MINIBOSS;
+        let roomX = this.chunkX + 12000;
+        let roomY = UNITSIZE;
+        let returnTo = door;
+
+
+//        let roomY = 500 * UNITSIZE * -1;
+
+        // floor and ceiling
+        for(let i=0; i<=18; i++){
+            let P1 = this.add.sprite(roomX+(i*UNITSIZE),roomY,'platform');
+            let P2 = this.add.sprite(roomX+(i*UNITSIZE),roomY+(16*UNITSIZE),'platform');
+
+            P1.setOrigin(0);
+            P2.setOrigin(0);
+            this.platforms.add(P1);
+            this.platforms.add(P2);
+        }
+        // left and right walls
+        for(let i=1; i<=15; i++){
+            let P1 = this.add.sprite(roomX,roomY+(i*UNITSIZE),'platform');
+            let P2 = this.add.sprite(roomX+(18*UNITSIZE),roomY+(i*UNITSIZE),'platform');
+
+            P1.setOrigin(0);
+            P2.setOrigin(0);
+            this.platforms.add(P1);
+            this.platforms.add(P2);
+        }
+
+        // center platform
+        for(let i=6; i<=12; i++){
+            let P1 = this.add.sprite(roomX+(i*UNITSIZE),roomY,'platform');
+            let P2 = this.add.sprite(roomX+(i*UNITSIZE),roomY+(8*UNITSIZE),'platform');
+
+            P1.setOrigin(0);
+            P2.setOrigin(0);
+            this.platforms.add(P1);
+            this.platforms.add(P2);
+        }
+
+        for(let i=1; i<=3; i++){
+            let P1 = this.add.sprite(roomX+(i*UNITSIZE),roomY+(4*UNITSIZE),'platform');
+            let P2 = this.add.sprite(roomX+(i*UNITSIZE),roomY+(12*UNITSIZE),'platform');
+
+            P1.setOrigin(0);
+            P2.setOrigin(0);
+            this.platforms.add(P1);
+            this.platforms.add(P2);
+        }
+
+        for(let i=15; i<=17; i++){
+            let P1 = this.add.sprite(roomX+(i*UNITSIZE),roomY+(4*UNITSIZE),'platform');
+            let P2 = this.add.sprite(roomX+(i*UNITSIZE),roomY+(12*UNITSIZE),'platform');
+
+            P1.setOrigin(0);
+            P2.setOrigin(0);
+            this.platforms.add(P1);
+            this.platforms.add(P2);
+        }
+
+        let P1 = this.add.sprite(roomX+(9*UNITSIZE),roomY+(12*UNITSIZE),'platform');
+        P1.setOrigin(0);
+        this.platforms.add(P1);
+
+
+        //toggle gates
+        let T1 = new Gate(this,roomX+(9*UNITSIZE),roomY+(7*UNITSIZE));
+        this.platforms.add(T1);
+        let T2 = new Gate(this,roomX+(9*UNITSIZE),roomY+(15*UNITSIZE));
+        this.platforms.add(T2);
+
+
+        //doors
+        let door1 = this.add.sprite( roomX + UNITSIZE, roomY + UNITSIZE,'door');
+        door1.setOrigin(0,0);
+
+        let door2 = this.add.sprite( roomX + UNITSIZE, roomY + UNITSIZE*13,'door');
+        door2.setOrigin(0,0);
+
+        let door3 = this.add.sprite( roomX + UNITSIZE*15, roomY + UNITSIZE,'door');
+        door3.setOrigin(0,0);
+
+        let door4 = this.add.sprite( roomX + UNITSIZE*15, roomY + UNITSIZE*13,'door');
+        door4.setOrigin(0,0);
+
+        door2.tpX = door3.x +48;
+        door2.tpY = door3.y +48;
+        door4.tpX = door1.x +48;
+        door4.tpY = door1.y +48;
+        this.emyPortals.add(door2);
+        this.emyPortals.add(door4);
+
+        this.resetXSave = this.resetX;
+        this.resetYSave = this.resetY;
+        this.resetX = roomX + (9 * UNITSIZE) + HALFUNIT;
+        this.resetY = roomY + UNITSIZE * 9;
+        let that = this;
+        let myOnDestroy = function(){
+            that.resetX = that.resetXSave;
+            that.resetY = that.resetYSave;
+            new Portal(that,roomX+(9*UNITSIZE),roomY+(11*UNITSIZE),{'img':'minidoor','onExit':function(){ that.playState=PLAYSTATE_MAIN}}).setTwin(returnTo);
+        }
+        let miniBoss = new EvilEyeball(this,roomX + UNITSIZE + 32, roomY + UNITSIZE + (32),1,{'scale':3,'hp':10,'defaultAcc':50,'maxVelocity':100,'onDestroy':myOnDestroy});
+
+
+        this.player.x = this.resetX;
+        this.player.y = this.resetY;
+    }
+
     makeShooter(x,y,angle=null){
         let P = new Shooter(this, x, y);
 
@@ -630,6 +766,7 @@ class GameScene extends Phaser.Scene {
     makeSpike(x,y){
         let S = new Spikes(this, x,y);
         this.spikes.add(S);
+        S.depth = 100;
         this.cleanup.add(S);
 
 
@@ -773,6 +910,7 @@ class GameScene extends Phaser.Scene {
 			player.x=portal.twin.x + 16;
 			player.y=portal.twin.y - 16;
 			this.soundPortal.play();
+			portal.onExit();
 			
 // 			if(portal.twin.y<0){
 // 				this.cameras.main.setBounds(portal.twin.x-W/2, portal.twin.y-16, W, H)
@@ -782,7 +920,14 @@ class GameScene extends Phaser.Scene {
 		
 		
 	}
-	
+
+	hitBossDoor(player,door){
+	    if(!door.opened){
+	        door.opened = true;
+	        this.makeMiniBossLvl1(door);
+	    }
+	}
+
     collidePlatform(player,platform){
 
     }
@@ -810,6 +955,7 @@ class GameScene extends Phaser.Scene {
         this.events.emit('playerDied');
         this.soundPlayerDie.play();
         if(lives<0){
+
             this.player.setVisible(false);
             this.player.body.checkCollision.none=true;
             let died = this.add.sprite(this.player.x,this.player.y,'ozzieYouDied');
@@ -817,11 +963,21 @@ class GameScene extends Phaser.Scene {
             this.gameOver();
             
         }else{
-            this.reset = true;
+
+            if(curHero.hasOwnProperty('anmDie')){
+                this.player.play(curHero.anmDie);
+                this.playState = PLAYSTATE_DEATH;
+            }else{
+                this.reset = true;
+            }
+
         }
     }
 
     hitLoot(player,loot){
+        if(this.playerDead){
+            return false;
+        }
         if(loot.cooldown<1){
             score++;
             this.events.emit('scoreUpdated');
@@ -831,7 +987,9 @@ class GameScene extends Phaser.Scene {
     }
 
     hitEnemy(player,enemy){
-
+        if(this.playerDead){
+            return false;
+        }
         if(enemy.myState === STATE_EN_DIE || !enemy.canHitPlayer){
             return false;
         }
@@ -848,7 +1006,7 @@ class GameScene extends Phaser.Scene {
     	emy.x = portal.tpX;
     	emy.y = portal.tpY;
 //     	emy.body.velocity.x *= -1;
-    	emy.body.acceleration.x =  emy.body.acceleration.x * -1;
+//    	emy.body.acceleration.x =  emy.body.acceleration.x * -1;
 
     }
 
@@ -912,7 +1070,17 @@ class GameScene extends Phaser.Scene {
 
     update(time,delta)
     {
-    
+
+        if(this.playState==PLAYSTATE_DEATH){
+
+                if(this.player.anims.currentFrame && this.player.anims.currentFrame.index === this.player.anims.getTotalFrames()  ){
+                    this.playState=PLAYSTATE_MAIN;
+                    this.reset = true;
+                }else{
+                    return false;
+                }
+
+        }
     	if(this.dashTimer>0){
     		this.dashTimer-=delta;
     	}
@@ -948,7 +1116,6 @@ class GameScene extends Phaser.Scene {
     
 //         this.bg0.tilePositionX +=.25;
         if(this.finished){
-
             this.flyTween.remove();
             this.flyTween = undefined;
             this.dashTimer=0;
@@ -986,20 +1153,20 @@ class GameScene extends Phaser.Scene {
             // If the LEFT key is down, set the player velocity to move left
             this.player.body.acceleration.x = -ACCELERATION;
             this.player.flipX=true;
-            if(this.player.anims.currentAnim.key != 'greenDotRun'){
-            	this.player.play('greenDotRun');
+            if(curHero.anmRun != null && this.player.anims.currentAnim.key != curHero.anmRun){
+            	this.player.play(curHero.anmRun);
             }
         } else if (rightInputIsActive()) {
             // If the RIGHT key is down, set the player velocity to move right
             this.player.body.acceleration.x = ACCELERATION;
             this.player.flipX=false;
-            if(this.player.anims.currentAnim.key != 'greenDotRun'){
-            	this.player.play('greenDotRun');
+            if(curHero.anmRun != null && this.player.anims.currentAnim.key != curHero.anmRun){
+            	this.player.play(curHero.anmRun);
             }
         } else {
             this.player.body.acceleration.x = 0;
-            if(this.player.anims.currentAnim.key != 'greenDotIdle'){
-            	this.player.play('greenDotIdle');
+            if(curHero.anmIdl != null && this.player.anims.currentAnim.key != curHero.anmIdl){
+            	this.player.play(curHero.anmIdl);
             }
         }
 
@@ -1008,7 +1175,10 @@ class GameScene extends Phaser.Scene {
             if(this.boss != undefined){
                 this.boss.update(time,delta);
             }
+        }else if(this.playState===PLAYSTATE_MINIBOSS){
+
         }else{
+
             for(let i=0;i<this.respawns.length;i++){
                 if(this.player.x > this.respawns[i][0]){
                     this.resetX = this.respawns[i][0];
@@ -1041,8 +1211,17 @@ class GameScene extends Phaser.Scene {
         this.loot.children.each((e)=>{
             e.update(time,delta);
         });
-        
+
+
+        this.corpses.children.each((e)=>{
+            e.update(time,delta);
+        });
+
         this.portals.children.each((e)=>{
+            e.update(time,delta);
+        });
+
+        this.gates.children.each((e)=>{
             e.update(time,delta);
         });
 
@@ -1061,11 +1240,14 @@ class GameScene extends Phaser.Scene {
             }
         });
 
-        this.cleanup.children.each((e)=>{
-            if(e.x< playerX - (W*2)){
-                e.destroy();
-            }
-        });
+        if(this.playState===PLAYSTATE_MAIN){
+                this.cleanup.children.each((e)=>{
+                    if(e.x< playerX - (W*2)){
+                        e.destroy();
+                    }
+                });
+        }
+
 
         if(this.player.y>H+512){
             this.playerLoseLife();
