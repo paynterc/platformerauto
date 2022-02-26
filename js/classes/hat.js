@@ -8,7 +8,8 @@ class Hat extends Phaser.Physics.Arcade.Sprite {
 		this.yoffSet = config.hasOwnProperty('yoff') ? config.yoff : -30;
 		this.x = this.scene.player.x + this.xoffSet;
 		this.y = this.scene.player.y + this.yoffSet;
-		
+		this.depth = 10000;
+
 		if(config.hasOwnProperty('anm')){
 			if(config.anm){
 				this.play(config.anm);

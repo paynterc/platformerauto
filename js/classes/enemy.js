@@ -3,8 +3,11 @@ class Enemy extends Phaser.GameObjects.Sprite {
     // CALLOUT: New enemies need to have a config {'img':someImage}, especially if they are bigger than 32x32
     constructor(scene, x, y, faction=1, config = {}) {
         super(scene, x, y, config.hasOwnProperty('img') ? config.img : 'emyIdle');
-        
-        this.setScale(config.hasOwnProperty('scale') ? config.scale : 1);
+        this.myScene = scene;
+        this.myConfig = config;
+
+        this.mySetScale();
+
 
         scene.add.existing(this);
         scene.physics.add.existing(this);
@@ -18,20 +21,21 @@ class Enemy extends Phaser.GameObjects.Sprite {
 			this.body.setOffset(config.bdyOx,config.bdyOy)
 		}
 		
-        this.myScene = scene;
-        this.myConfig = config;
+
         
         // Stats
         this.pathReactTime = 120;
         this.defaultAcc = config.hasOwnProperty('defaultAcc') ? config.defaultAcc : 25;
         this.maxVelocity = config.hasOwnProperty('maxVelocity') ? config.maxVelocity : 50;
+        this.killAfterTime = config.hasOwnProperty('killAfterTime') ? config.killAfterTime : 0;
 
         this.hp = config.hasOwnProperty('hp') ? config.hp : 1;
+        this.canKillMe = config.hasOwnProperty('canKillMe') ? config.canKillMe : true;
         this.myAttackFrequency = 100;
         this.myBumpFrequency = config.hasOwnProperty('bumpFrequency') ? config.bumpFrequency : 3;
         this.canHitPlayer = true;// Let enemy not hit player initially. Set a timer to make it active.
         this.canHitPlayerTimer = 100;
-        this.damageOnImpact = true;// damages player if you don't land on top
+        this.damageOnImpact = config.hasOwnProperty('damageOnImpact') ? config.damageOnImpact : true;
 
         // Presets
         this.myAttackTimer = this.myAttackFrequency;
@@ -48,7 +52,7 @@ class Enemy extends Phaser.GameObjects.Sprite {
         //this.body.setPushable(false);
         this.body.setGravityY(GRAVITY);
 
-        this.coins = 1;
+        this.coins = config.hasOwnProperty('coins') ? config.coins : 1;
 
         this.depth = 100;
         // this.anmIdle = config.hasOwnProperty('anmIdle') ? config.anmIdle : 'emyIdle';
@@ -57,16 +61,19 @@ class Enemy extends Phaser.GameObjects.Sprite {
         // this.anmHit = config.hasOwnProperty('anmHit') ? config.anmHit : 'emyHit';
         // this.anmAttack = config.hasOwnProperty('anmAttack') ? config.anmAttack : 'emyAttack';
         // this.anmDie = config.hasOwnProperty('anmDie') ? config.anmDie : 'emyDie';
-
-        this.anmIdle = config.hasOwnProperty('anmIdle') ? config.anmIdle : null;
-        this.anmWalk = config.hasOwnProperty('anmWalk') ? config.anmWalk : null;
-        this.anmRun = config.hasOwnProperty('anmRun') ? config.anmRun : null;
-        this.anmHit = config.hasOwnProperty('anmHit') ? config.anmHit : null;
-        this.anmAttack = config.hasOwnProperty('anmAttack') ? config.anmAttack : null;
-        this.anmDie = config.hasOwnProperty('anmDie') ? config.anmDie : null;
+        this.anmDefault = config.hasOwnProperty('anmDefault') ? config.anmDefault : null;
+        this.anmIdle = config.hasOwnProperty('anmIdle') ? config.anmIdle : this.anmDefault;
+        this.anmWalk = config.hasOwnProperty('anmWalk') ? config.anmWalk : this.anmDefault;
+        this.anmRun = config.hasOwnProperty('anmRun') ? config.anmRun : this.anmDefault;
+        this.anmHit = config.hasOwnProperty('anmHit') ? config.anmHit : this.anmDefault;
+        this.anmAttack = config.hasOwnProperty('anmAttack') ? config.anmAttack : this.anmDefault;
+        this.anmDie = config.hasOwnProperty('anmDie') ? config.anmDie : this.anmDefault;
         if(config.hasOwnProperty('onDestroy')){
             this.onDestroy = config.onDestroy;
         }
+
+        this.onCorpseDestroy = config.hasOwnProperty('onCorpseDestroy') ? config.onCorpseDestroy : null;
+
 
         if(this.anmIdle) this.play(this.anmIdle);
         scene.enemies.add(this);
@@ -75,12 +82,24 @@ class Enemy extends Phaser.GameObjects.Sprite {
         this.init();
     }
 
+    mySetScale(){
+            this.setScale(this.myConfig.hasOwnProperty('scale') ? this.myConfig.scale : 1);
+            this.myScale = this.myConfig.hasOwnProperty('scale') ? this.myConfig.scale : 1;
+    }
+
     init() {
         // Override this
     }
 
     update(time,delta){
         this.myPreUpdate(time,delta);
+        if(this.killAfterTime>0 && this.myState!=STATE_EN_DIE){
+            this.killAfterTime -=1;
+            if(this.killAfterTime<=0){
+                this.die();
+            }
+        }
+
         this.myBumpTimer--;
 
 //         if(this.canHitPlayerTimer>0){
@@ -108,27 +127,33 @@ class Enemy extends Phaser.GameObjects.Sprite {
             case STATE_EN_DIE:
                 this.die(time,delta);
                 break;
+            case STATE_EN_INTRO:
+                this.intro(time,delta);
+                break;
             default:
                 this.idle(time,delta);
                 break;
         }
 
-        if(this.y > H || this.y< H*-500){
+        if(this.y > H*500 || this.y< H*-500){
             this.destroy();
         }
         this.myPostUpdate(time,delta);
     }
 
-    myPreUpdate(){
+    intro(time,delta){
+    }
+
+    myPreUpdate(time,delta){
 
     }
 
-    myPostUpdate(){
+    myPostUpdate(time,delta){
 
     }
 
     startMovement(){
-        if(this.body.touching.down && !this.walkStarted){
+        if(this.body && this.body.touching.down && !this.walkStarted){
             this.walkStarted=true;
             this.body.acceleration.x = this.defaultAcc;
             this.myState = STATE_EN_MOVE;
@@ -145,8 +170,14 @@ class Enemy extends Phaser.GameObjects.Sprite {
         }
     }
 
-    walk(){
+    preWalk(){
+
+    }
+
+    walk(time,delta){
+
         this.myState = STATE_EN_MOVE;
+        this.preWalk(time,delta);
         if(this.anmWalk && this.anims.currentAnim && this.anims.currentAnim.key != this.anmWalk){
             this.play(this.anmWalk);
         }
@@ -174,7 +205,9 @@ class Enemy extends Phaser.GameObjects.Sprite {
     }
 
     kill(){
-
+        for(let i=0;i<this.coins;i++){
+            new Coin(this.myScene,this.x,this.y);
+        }
         if(this.myState != STATE_EN_DIE){
             this.myState = STATE_EN_DIE;
         }
@@ -184,7 +217,10 @@ class Enemy extends Phaser.GameObjects.Sprite {
     hit(player){
         this.myPreHit(player);
         if(player.y <= this.y-UNITSIZE){
-            this.myScene.shakeIt();
+            if(!this.canKillMe){
+                return false;
+            }
+            //this.myScene.shakeIt();
 //             player.body.velocity.y = ACCELERATION *-1;
 
 
@@ -192,9 +228,9 @@ class Enemy extends Phaser.GameObjects.Sprite {
             if(this.hp<1){
                 this.kill();
                 this.myScene.soundDropFall.play();
-                for(let i=0;i<this.coins;i++){
-                    new Coin(this.myScene,this.x,this.y);
-                }
+
+                this.myScene.emitter3.emitParticleAt(this.x, this.y, 10);
+
             }
 
 
@@ -212,7 +248,10 @@ class Enemy extends Phaser.GameObjects.Sprite {
 
         if(this.anmDie){
             // create a corpse object that you won't collide with
-            let corpse = new Corpse(this.myScene,this.x,this.y);
+            let corpse = new Corpse(this.myScene,this.x,this.y,{'scale':this.myScale});
+            if(this.onCorpseDestroy){
+                corpse.onDestroy = this.onCorpseDestroy;
+            }
             corpse.play(this.anmDie);
             this.onDestroy();
             this.destroy();

@@ -1,4 +1,4 @@
-var upKey, leftKey, rightKey, downKey, attKey, spaceKey, activePointer, centerX, centerY, defaultVolume, animConfigs, hatsDb, hats, curHat, score, lives, level, chunksToFinish, heroes, curHero;
+var upKey, leftKey, rightKey, downKey, attKey, spaceKey, activePointer, centerX, centerY, defaultVolume, animConfigs, hatsDb, hats, curHat, score, lives, level, chunksToFinish, heroes, curHero, playerHasKey, kidsSaved;
 const MAX_SPEED = 400; // pixels/second
 const DRAG = 1000; // pixels/second
 const GRAVITY = 2600; // pixels/second/second
@@ -8,8 +8,10 @@ const PLATFORM_DELAY = 3200;// milliseconds
 const UNITSIZE = 32;
 const HALFUNIT = 16;
 const MAXENEMIES = 100;
-const W = 1280;
-const H = 640;
+//const W = 1280;
+//const H = 640;
+const W = 864;
+const H = 448;
 const VOID = 0;
 const PLATFORM = 1;
 const SAFETIME = 100;
@@ -20,6 +22,7 @@ const STATE_EN_HIT = 2;
 const STATE_EN_ATTACK = 3;
 const STATE_EN_JUMP = 4;
 const STATE_EN_DIE = 5;
+const STATE_EN_INTRO = 6;
 
 const STATE_PLATFORM_SOLID = 0;
 const STATE_PLATFORM_PHASE = 1;
@@ -29,6 +32,9 @@ const PLAYSTATE_MAIN = 0;
 const PLAYSTATE_BOSS = 1;
 const PLAYSTATE_MINIBOSS = 2;
 const PLAYSTATE_DEATH = 3;
+const PLAYSTATE_CUTSCENE = 4;
+
+const KEYPRICE = 5;
 
 const fireInputIsActive = function() {
     return activePointer.isDown;

@@ -80,7 +80,7 @@ class EnemyFly extends Enemy {
         // let egg = this.myScene.physics.add.sprite(this.x,this.y,'egg');
         // this.myScene.splatbullets.add(egg);
 
-        let egg = new Bullet(this.myScene,this.x,this.y,0,{img:'egg',allowGrav:true,initSpeed:0,myGroup:this.myScene.splatbullets});
+        //let egg = new Bullet(this.myScene,this.x,this.y,0,{img:'egg',allowGrav:true,initSpeed:0,myGroup:this.myScene.splatbullets,gravity:10,accelerate:1});
 
 
     }

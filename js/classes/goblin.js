@@ -5,10 +5,10 @@ class Goblin extends Enemy {
 
         // Override this
         // this.body.allowGravity = false;
-        this.arrowSpd = this.myConfig.hasOwnProperty('arrowSpd') ? this.myConfig.arrowSpd : 250;
+        this.arrowSpd = this.myConfig.hasOwnProperty('arrowSpd') ? this.myConfig.arrowSpd : 150;
         this.flipX = this.myConfig.hasOwnProperty('flipX') ? this.myConfig.flipX : false;
         this.numShots = this.myConfig.hasOwnProperty('numShots') ? this.myConfig.numShots : 1;
-
+        this.damageOnImpact = false;
 
         this.defaultAcc = 0;
         this.body.velocity.x=0;
@@ -53,7 +53,7 @@ class Goblin extends Enemy {
 //        let angle = this.flipX ? 225 : -45;
         let angle = this.flipX ? 180 : 0;
 //        let arrow = new Arrow(this.myScene,this.x,this.y,angle,{'img':'arrow','initSpeed':this.arrowSpd});
-        let bullet = new Bullet(this.myScene,this.x,this.y,angle,{anm:'fireball','initSpeed':this.arrowSpd});
+        let bullet = new Bullet(this.myScene,this.x,this.y,angle,{anm:'fireball','initSpeed':this.arrowSpd,scale:.75});
 
     }
 

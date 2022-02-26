@@ -14,6 +14,7 @@ class Gate extends Phaser.Physics.Arcade.Sprite {
 
         this.toggleTimer = this.toggleTime;
         this.autoToggle = config.hasOwnProperty('autoToggle') ? config.autoToggle : true;
+        this.toggleVisible = config.hasOwnProperty('toggleVisible') ? config.toggleVisible : false;
         this.visible = true;
 
         this.init();
@@ -33,8 +34,11 @@ class Gate extends Phaser.Physics.Arcade.Sprite {
 
     toggle(){
         this.body.enable = !this.body.enable;
-        this.visible = !this.visible;
-        this.setVisible(this.visible);
+        if(this.toggleVisible){
+            this.visible = !this.visible;
+            this.setVisible(this.visible);
+        }
+
     }
 
     init(){

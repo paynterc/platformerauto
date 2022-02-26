@@ -106,6 +106,9 @@ class GameScene extends Phaser.Scene {
 		this.dashTimer=0;
 		this.dashingTimer=0;
         this.boss = undefined;
+        this.curAcceleration = ACCELERATION;
+        this.effectTimer = 0;
+
 
         // groups
         this.platforms = this.physics.add.staticGroup();
@@ -120,6 +123,7 @@ class GameScene extends Phaser.Scene {
         this.splatbullets = this.add.group();
         this.loot = this.add.group();
         this.spikes = this.physics.add.staticGroup();
+        this.iceBlobs = this.physics.add.staticGroup();
         this.cleanup = this.add.group();
         this.specialPlatforms = this.physics.add.staticGroup();
         this.portals = this.physics.add.staticGroup();
@@ -127,12 +131,17 @@ class GameScene extends Phaser.Scene {
         this.finish = this.physics.add.staticGroup();
         this.corpses = this.add.group();
         this.gates = this.add.group();
+        this.kids = this.add.group();
+        this.justMobs = this.physics.add.group();// don't interact with player
 
         // colliders
         this.physics.add.collider(this.player, this.platforms, this.collidePlatform,false,this);
         this.physics.add.overlap(this.player, this.loot, this.hitLoot,false,this);
         this.physics.add.overlap(this.player, this.portals, this.hitPortal,false,this);
         this.physics.add.overlap(this.player, this.bossDoors, this.hitBossDoor,false,this);
+        this.physics.add.overlap(this.player, this.kids, this.hitKid,false,this);
+        this.physics.add.collider(this.kids, this.platforms);
+        this.physics.add.collider(this.justMobs, this.platforms);
         this.physics.add.collider(this.enemies, this.platforms);
         this.physics.add.collider(this.enemies, this.gates);
         this.physics.add.collider(this.splatbullets, this.platforms, this.bulletHitPlatform,false,this);
@@ -145,10 +154,57 @@ class GameScene extends Phaser.Scene {
         this.physics.add.overlap(this.player, this.bullets, this.hitBullet,false,this);
         this.physics.add.overlap(this.player, this.splatbullets, this.hitBullet,false,this);
         this.physics.add.collider(this.player, this.spikes, this.hitSpike,false,this);
+        this.physics.add.collider(this.player, this.iceBlobs, this.hitIceBlob,false,this);
         this.physics.add.collider(this.player, this.specialPlatforms);
         this.physics.add.overlap(this.player, this.finish, this.finishReached,false,this);
-        this.physics.add.collider(this.player, this.gates);
 
+
+        let particles = this.add.particles('square');
+        this.emitter = particles.createEmitter(
+        {
+        x:W/2,
+        y:H/2,
+        angle: { min: 180, max: 360 },
+        speed: 500,
+        gravityY: 350,
+        lifespan: 1000,
+        quantity: 4,
+        scale: { min: 0.1, max: 1 },
+        tint: ['0xFC7E7E','0xFCD77E','0xFCF87E','0xAAFC7E','0x7EFCDD','0x7EA0FC','0xBD7EFC','0xffffff']
+        }
+        );
+        this.emitter.stop();
+
+
+        this.emitter2 = particles.createEmitter(
+        {
+        x:W/2,
+        y:H/2,
+        angle: { min: 135, max: 360 },
+        speed: 500,
+        gravityY: 150,
+        lifespan: 1000,
+        quantity: 4,
+        scale: { min: 0.05, max: .15 },
+        tint: ['0x0088ff','0x0048FF','0x00c8ff','0xffffff']
+        }
+        );
+        this.emitter2.stop();
+
+        this.emitter3 = particles.createEmitter(
+        {
+        x:W/2,
+        y:H/2,
+        angle: { min: 135, max: 360 },
+        speed: 500,
+        gravityY: 150,
+        lifespan: 1000,
+        quantity: 4,
+        scale: { min: 0.05, max: .15 },
+        tint: ['0xff3700','0xff7700','0xffb700','0xffffff']
+        }
+        );
+        this.emitter3.stop();
 
 // controls
 
@@ -156,18 +212,24 @@ class GameScene extends Phaser.Scene {
         // chunkMarker.setOrigin(0);
 
         this.cameras.main.startFollow(this.player);
-		this.cameras.main.setDeadzone(null, H);// Pair this with a scrollY check in the update() function
+// ORIGINAL SETTINGS
+//		this.cameras.main.setDeadzone(null, H);// Pair this with a scrollY check in the update() function
+//		this.cameras.main.setDeadzone(null, H*.5);// Pair this with a scrollY check in the update() function
+// END ORIGINAL SETTINGS
 
-		
-// 		this.cameras.main.setFollowOffset(0, 0);
+		this.cameras.main.setLerp(1,.05);//Slows VERTICAL FOLLOW
 
-		//this.cameras.main.setLerp(1,0);//STOPS VERTICAL FOLLOW
-		
 		/**** pretty good
 		this.cameras.main.setDeadzone(W/3, H/2);
 		this.cameras.main.setFollowOffset(0, H/6 * -1);
 		****/
-		
+
+		/*** Experimental settings
+		this.cameras.main.setZoom(1.5);
+        his.cameras.main.setFollowOffset(0, 0);
+
+        this.cameras.main.setLerp(1,.0);//STOPS VERTICAL FOLLOW
+		****/
 		
         this.scene.launch('HudScene');
 
@@ -178,6 +240,7 @@ class GameScene extends Phaser.Scene {
         this.soundPlayerDie = this.sound.add('playerDie',{volume:.25});
         this.soundPortal = this.sound.add('portal',{volume:.25});
         this.soundFireExplode = this.sound.add('fireExplode',{volume:.25});
+        this.soundFail = this.sound.add('fail',{volume:.25});
 
         this.flyTween = this.tweens.addCounter({
             from: 20,
@@ -192,18 +255,8 @@ class GameScene extends Phaser.Scene {
             this.makeChunk(setRespawn);
         }
         
-        if(curHat){
-			// Find the hat config in the hats array
-			let hatConfig = hats.filter(obj => {
-			  return obj.img == curHat;
-			});
-			
-			// Instantiate the hat. Use eval to translate a string to the Class name. So, instead of new Hat(), I do new (eval("Hat"))().
-			if(hatConfig.length){
-				this.hat=new (eval(hatConfig[0].hatClass))(this,this.player.x,this.player.y-30,hatConfig[0]);
-			}        
-            
-        }
+        this.spawnHat();
+
 
 //         this.enemyFly = new EnemyFly(this,this.player.x-64,this.player.y-128);
 //         let spawner = new Spawner(this, this.player.x+128,this.player.y-64,1,{'img':'kahlessRainbow','anmIdle':'kahlessRainbow'});      
@@ -216,16 +269,38 @@ class GameScene extends Phaser.Scene {
 //         this.bulletShields.add(shield);
 // 		   new BobTheBlob(this,this.player.x+128,this.player.y-64);
 // 		   new Goblin(this,this.player.x+128,this.player.y-64,1,{'flipX':Phaser.Math.Between(0,1)});
-// 		   new Goblin(this,this.player.x+128,this.player.y-64,1,{'flipX':Phaser.Math.Between(0,1)});
+// 		   new EvilEyeball(this,this.player.x+128,this.player.y-64,1,{'flipX':Phaser.Math.Between(0,1)});
 //         new Enemy(this, this.player.x+128,this.player.y-128,1,{img:'bonyBoomBox',anmIdle:'bonyIdle',anmWalk:'bonyWalk',anmDie:'bonyDie'});
 // 		   new BobbyBomb(this,this.player.x+128,this.player.y-64);
 // 		   new HammerGiant(this,this.player.x+128,this.player.y-64,1,{img:'rockHammerGuy',scale:2});
 //         this.makeBossLvl1();
-        
-//         let F = this.add.sprite(this.player.x+128,this.player.y-64,'checkpoint').setScale(4);
+//        new Kid(this, this.player.x+128,this.player.y-64);
+//           new Enemy(this, this.player.x+128,this.player.y-128,1,{img:'walkingDude',anmDefault:'walkingDude',canKillMe:false,damageOnImpact:false});
 //         this.finish.add(F);
 
+ 		   //new HatLoot(this,this.player.x+128,this.player.y-64,{'hatKey':'blobCrown','img':'blobCrown'});
 
+    }
+
+    dropHatLoot(key,x,y){
+        new HatLoot(this,x,y,{'img':key});
+    }
+
+    spawnHat(){
+             if(!curHat) return false;
+			// Find the hat config in the hats array
+
+			let hatConfig = hats.filter(obj => {
+			  return obj.img == curHat;
+			});
+			if(!hatConfig) return false
+			// Instantiate the hat. Use eval to translate a string to the Class name. So, instead of new Hat(), I do new (eval("Hat"))().
+			if(this.hat){
+			    this.hat.destroy();
+			}
+			if(hatConfig.length){
+				this.hat=new (eval(hatConfig[0].hatClass))(this,this.player.x,this.player.y-30,hatConfig[0]);
+			}
     }
 
     addBackground(){
@@ -451,6 +526,10 @@ class GameScene extends Phaser.Scene {
                             
 //                            this.makePortalPair(this.chunkX+(i*UNITSIZE), Math.max(j-1,0) * UNITSIZE);
                         
+                        }else if(Phaser.Math.Between(1,10)===10 && j!=firstFloorLvl && ckGrid[i][Math.max(j-1,0)] === VOID){
+
+                            this.makeIceBlob( this.chunkX+(i*UNITSIZE) + HALFUNIT,j*UNITSIZE - HALFUNIT);
+
                         }
 
                         if(Phaser.Math.Between(1,20)===1 && ckGrid[i][Math.max(j-1,0)] === VOID){
@@ -480,16 +559,45 @@ class GameScene extends Phaser.Scene {
                         /// Spawn enemy
                         let cellAbove = Math.max(j-1,0);
                         if(ckGrid[i][cellAbove] === VOID && this.chunkX>0){
+                            let grs = this.add.sprite( this.chunkX + (i * UNITSIZE), j * UNITSIZE-UNITSIZE+1,'grass');
+                            grs.setOrigin(0,0);
+                            grs.depth = 9;
                             if(!this.madeMiniBossDoor){
                                 this.madeMiniBossDoor = true;
-                                new BossDoor(this,this.chunkX + (i * UNITSIZE) - UNITSIZE, j * UNITSIZE - UNITSIZE );
+                                new BossDoor(this,this.chunkX + (i * UNITSIZE), j * UNITSIZE - (UNITSIZE*2) );
                             }
                             // chance for tree
-                            let treeroll = Phaser.Math.Between(1,10);
-                            if(treeroll==10){
-                                let tree = this.add.sprite( this.chunkX + (i * UNITSIZE) - UNITSIZE, j * UNITSIZE - 127,'tree');
-                                tree.setOrigin(0,0);
-                                tree.depth = 10;
+                            let treeroll = 5;
+                            if( Phaser.Math.Between(1,treeroll) == treeroll){
+                                let decRoll = Phaser.Math.Between(1,4);
+                                let spr1 = null;
+                                let flrs = ['flowerWt','flowerRd','flowerOr'];
+                                switch (decRoll) {
+                                    case 1:
+
+                                        spr1 = this.add.sprite( this.chunkX + (i * UNITSIZE)-48, j * UNITSIZE  -127,'tree1');
+                                        spr1.setOrigin(0,0);
+                                        spr1.depth = 10;
+                                        break;
+                                    case 2:
+                                        let flrTpe =  Phaser.Math.Between(0,2);
+                                        spr1 = this.add.sprite( this.chunkX + (i * UNITSIZE), j * UNITSIZE - 16,flrs[flrTpe]);
+                                        spr1.setOrigin(0,0);
+                                        spr1.depth = 10;
+                                        spr1.setScale(2);
+                                        break;
+                                    case 3:
+                                        spr1 = this.add.sprite( this.chunkX + (i * UNITSIZE), j * UNITSIZE - UNITSIZE,'stump');
+                                        spr1.setOrigin(0,0);
+                                        spr1.depth = 10;
+                                        break;
+                                    case 4:
+                                        spr1 = this.add.sprite( this.chunkX + (i * UNITSIZE), j * UNITSIZE - UNITSIZE-1,'tree2');
+                                        spr1.setOrigin(0,0);
+                                        spr1.depth = 10;
+                                        break;
+                                    }
+
 
 //                                let mark = this.add.sprite( this.chunkX + (i * UNITSIZE), j * UNITSIZE,'hero');
 //                                mark.setOrigin(0,0);
@@ -527,7 +635,8 @@ class GameScene extends Phaser.Scene {
                                     }
 
                             }else if(roll>=5 && roll<=10){
-                                new EnemyFly(this, this.chunkX+(i*UNITSIZE),(j-2)*UNITSIZE);
+
+                                new EnemyFly(this, this.chunkX+(i*UNITSIZE),Phaser.Math.Between(2,4) * UNITSIZE);
 
 
 //                                emy1roll = Phaser.Math.Between(1,6);
@@ -547,6 +656,7 @@ class GameScene extends Phaser.Scene {
 
 
                             }else if(roll==11){
+                                new Kid(this, this.chunkX+(i*UNITSIZE),-128);
 //                            	if(Phaser.Math.Between(1,2)===2){
 //                            		new Commander(this, this.chunkX+(i*UNITSIZE),-512,1,{'img':'commander'});
 //                            	}else{
@@ -697,15 +807,16 @@ class GameScene extends Phaser.Scene {
 
 
         //toggle gates
-        let T1 = new Gate(this,roomX+(9*UNITSIZE),roomY+(7*UNITSIZE));
-        this.platforms.add(T1);
-        let T2 = new Gate(this,roomX+(9*UNITSIZE),roomY+(15*UNITSIZE));
-        this.platforms.add(T2);
+        let T1 = new Gate(this,roomX+(9*UNITSIZE),roomY+(7*UNITSIZE)).setVisible(false);
+//        this.gates.add(T1);
+        let T2 = new Gate(this,roomX+(9*UNITSIZE),roomY+(15*UNITSIZE)).setVisible(false);
+//        this.gates.add(T2);
 
 
         //doors
         let door1 = this.add.sprite( roomX + UNITSIZE, roomY + UNITSIZE,'door');
         door1.setOrigin(0,0);
+
 
         let door2 = this.add.sprite( roomX + UNITSIZE, roomY + UNITSIZE*13,'door');
         door2.setOrigin(0,0);
@@ -723,6 +834,10 @@ class GameScene extends Phaser.Scene {
         this.emyPortals.add(door2);
         this.emyPortals.add(door4);
 
+        //this.body.setSize(this.width - this.scaleX, this.height - this.scaleY)
+        door2.body.setSize(16, 64);
+        door4.body.setSize(16, 64);
+
         this.resetXSave = this.resetX;
         this.resetYSave = this.resetY;
         this.resetX = roomX + (9 * UNITSIZE) + HALFUNIT;
@@ -731,13 +846,42 @@ class GameScene extends Phaser.Scene {
         let myOnDestroy = function(){
             that.resetX = that.resetXSave;
             that.resetY = that.resetYSave;
-            new Portal(that,roomX+(9*UNITSIZE),roomY+(11*UNITSIZE),{'img':'minidoor','onExit':function(){ that.playState=PLAYSTATE_MAIN}}).setTwin(returnTo);
+            that.events.emit('bossGone');
+            new Portal(that,roomX+(9*UNITSIZE),roomY+(11*UNITSIZE)-UNITSIZE,{'img':'minidoorOpen','onExit':function(){ that.returnToMainState(); returnTo.play('miniDoorBurn');}}).setTwin(returnTo);
         }
-        let miniBoss = new EvilEyeball(this,roomX + UNITSIZE + 32, roomY + UNITSIZE + (32),1,{'scale':3,'hp':10,'defaultAcc':50,'maxVelocity':100,'onDestroy':myOnDestroy});
+        //let miniBoss = new EvilEyeball(this,roomX + UNITSIZE + 32, roomY + UNITSIZE + (32),1,{'scale':3,'hp':10,'defaultAcc':50,'maxVelocity':100,'onDestroy':myOnDestroy});
+//        let miniBoss = new BossEvilEyeball(this,roomX + UNITSIZE + 32, roomY + UNITSIZE + (32),1,{'defaultAcc':100,'maxVelocity':200,'onDestroy':myOnDestroy});
+//        let miniBoss = new BossBlobKing(this,roomX + UNITSIZE + 32, roomY + UNITSIZE + (32),1,{'defaultAcc':50,'maxVelocity':100,'onDestroy':myOnDestroy});
 
+//        let rnd = Phaser.Math.Between(1,3);
+        let rnd = 3;
+        if(rnd==1){
 
+            new BossEvilEyeball(this,roomX + UNITSIZE + 32, roomY + UNITSIZE + (32),1,{'defaultAcc':100,'maxVelocity':200,'onDestroy':myOnDestroy});
+        }else if(rnd==2){
+
+            new BossBlobKing(this,roomX + UNITSIZE + 32, roomY + UNITSIZE + (32),1,{'defaultAcc':50,'maxVelocity':100,'onDestroy':myOnDestroy});
+        }else{
+
+            new BossToxic(this,roomX + UNITSIZE + 32, roomY + UNITSIZE + (32),1,{'defaultAcc':50,'maxVelocity':100,'onDestroy':myOnDestroy});
+        }
+        this.cameras.main.setBackgroundColor(0x000000);
         this.player.x = this.resetX;
         this.player.y = this.resetY;
+    }
+
+    gotHat(hatKey){
+        let theHat
+        let hatConfig = hats.filter(obj => {
+          return obj.img == theHat;
+        });
+        hatConfig.hasHat=true;
+
+    }
+
+    returnToMainState(){
+        this.playState=PLAYSTATE_MAIN;
+        this.cameras.main.setBackgroundColor(0x85f2ff);
     }
 
     makeShooter(x,y,angle=null){
@@ -766,6 +910,16 @@ class GameScene extends Phaser.Scene {
     makeSpike(x,y){
         let S = new Spikes(this, x,y);
         this.spikes.add(S);
+        S.depth = 100;
+        this.cleanup.add(S);
+
+
+        return S;
+    }
+
+    makeIceBlob(x,y){
+        let S = new IceBlob(this, x,y);
+        this.iceBlobs.add(S);
         S.depth = 100;
         this.cleanup.add(S);
 
@@ -921,11 +1075,45 @@ class GameScene extends Phaser.Scene {
 		
 	}
 
+    hitKid(player,kid){
+        if(!kid.ascending){
+            this.emitter.emitParticleAt(kid.x, kid.y, 50);
+            this.soundPortal.play();
+            kid.ascend();
+            kidsSaved ++;
+            this.events.emit('kidsUpdated');
+            console.log('kidsSaved',kidsSaved);
+            console.log('remainder',kidsSaved%3);
+            if(kidsSaved % 3===0){
+                lives++;
+                this.events.emit('extraLife');
+            }
+        }
+    }
+
 	hitBossDoor(player,door){
-	    if(!door.opened){
-	        door.opened = true;
+
+
+	    if(door.state=='closed'){
+	        if(playerHasKey){
+	            playerHasKey = false;
+	            this.events.emit('playerUsedKey');
+                door.state='opening';
+                door.play('miniDoorOpen');
+
+	        }else{
+	            if(!door.pulsing){
+                    this.soundFail.play();
+                    door.pulsing=true;
+                    door.play('miniDoorPulse');
+	            }
+	        }
+	    }else if(door.state=='open'){
+            door.state = 'used';
+	        this.soundPortal.play();
 	        this.makeMiniBossLvl1(door);
 	    }
+
 	}
 
     collidePlatform(player,platform){
@@ -972,18 +1160,16 @@ class GameScene extends Phaser.Scene {
             }
 
         }
+        this.emitter3.emitParticleAt(this.x, this.y, 10);
+
     }
 
     hitLoot(player,loot){
         if(this.playerDead){
             return false;
         }
-        if(loot.cooldown<1){
-            score++;
-            this.events.emit('scoreUpdated');
-            this.soundCoinPickup.play();
-            loot.destroy();
-        }
+        loot.pickup(player);
+
     }
 
     hitEnemy(player,enemy){
@@ -998,6 +1184,8 @@ class GameScene extends Phaser.Scene {
     	if(this.playerSafeTime>0){
     		return false;
     	}
+    	this.emitter3.emitParticleAt(enemy.x, enemy.y, 3);
+
 		enemy.hit(player);
 
     }
@@ -1036,6 +1224,22 @@ class GameScene extends Phaser.Scene {
         this.playerLoseLife();
     }
 
+
+    hitIceBlob(player,spike){
+
+        this.shakeIt();
+        spike.destroy();
+        this.soundDropFall.play();
+        this.emitter2.emitParticleAt(spike.x, spike.y, 20);
+
+        if(this.playerSafeTime>0) return false;
+        if(curHat=='blobCrown') return false;
+        this.curAcceleration = ACCELERATION/4;
+        this.effectTimer = 200;
+        this.player.setTint("0x0048FF");
+
+    }
+
     shakeIt(){
         if(this.shakeCooldown<1){
             this.shakeCooldown = 1000;
@@ -1071,6 +1275,8 @@ class GameScene extends Phaser.Scene {
     update(time,delta)
     {
 
+
+
         if(this.playState==PLAYSTATE_DEATH){
 
                 if(this.player.anims.currentFrame && this.player.anims.currentFrame.index === this.player.anims.getTotalFrames()  ){
@@ -1081,6 +1287,14 @@ class GameScene extends Phaser.Scene {
                 }
 
         }
+        if(this.effectTimer>0){
+            this.effectTimer--;
+            if(this.effectTimer<=0){
+                this.curAcceleration = ACCELERATION;
+                this.player.setTint("0xFFFFFF");
+            }
+        }
+
     	if(this.dashTimer>0){
     		this.dashTimer-=delta;
     	}
@@ -1107,12 +1321,12 @@ class GameScene extends Phaser.Scene {
 			this.cameras.main.centerOn(this.player.x, this.player.y);
     	}
     
-    	if(this.player.y > 0 && this.cameras.main.scrollY<0){
-    		this.cameras.main.scrollY+=  (this.cameras.main.scrollY>2) ? 2 : 1;
-    	}
-    	if(this.cameras.main.scrollY>0){
-    		this.cameras.main.scrollY--;
-    	}
+//    	if(this.player.y > 0 && this.cameras.main.scrollY<0){
+//    		this.cameras.main.scrollY+=  (this.cameras.main.scrollY>2) ? 2 : 1;
+//    	}
+//    	if(this.cameras.main.scrollY>0){
+//    		this.cameras.main.scrollY--;
+//    	}
     
 //         this.bg0.tilePositionX +=.25;
         if(this.finished){
@@ -1138,44 +1352,48 @@ class GameScene extends Phaser.Scene {
         }
         this.shakeCooldown-=delta;
 
-        let onTheGround = this.player.body.touching.down;
-        if (onTheGround) {
-            // Jump when the player is touching the ground and the up arrow is pressed
-            if(jumpInputIsActive()){
-                this.player.body.velocity.y = (curHat == "alienHat") ? JUMP_SPEED/1.5 : JUMP_SPEED;
-                this.canDoubleJump = true;
-            }else{
-                this.canDoubleJump = false;
+        if(this.playState!=PLAYSTATE_CUTSCENE){
+
+            let onTheGround = this.player.body.touching.down;
+            if (onTheGround) {
+                // Jump when the player is touching the ground and the up arrow is pressed
+                if(jumpInputIsActive()){
+                    this.player.body.velocity.y = (curHat == "alienHat") ? JUMP_SPEED/1.5 : JUMP_SPEED;
+                    this.canDoubleJump = true;
+                }else{
+                    this.canDoubleJump = false;
+                }
+            }
+
+            if (leftInputIsActive()) {
+                // If the LEFT key is down, set the player velocity to move left
+                this.player.body.acceleration.x = -this.curAcceleration;
+                this.player.flipX=true;
+                if(curHero.anmRun != null && this.player.anims.currentAnim.key != curHero.anmRun){
+                    this.player.play(curHero.anmRun);
+                }
+            } else if (rightInputIsActive()) {
+                // If the RIGHT key is down, set the player velocity to move right
+                this.player.body.acceleration.x = this.curAcceleration;
+                this.player.flipX=false;
+                if(curHero.anmRun != null && this.player.anims.currentAnim.key != curHero.anmRun){
+                    this.player.play(curHero.anmRun);
+                }
+            } else {
+                this.player.body.acceleration.x = 0;
+                if(curHero.anmIdl != null && this.player.anims.currentAnim.key != curHero.anmIdl){
+                    this.player.play(curHero.anmIdl);
+                }
             }
         }
-
-        if (leftInputIsActive()) {
-            // If the LEFT key is down, set the player velocity to move left
-            this.player.body.acceleration.x = -ACCELERATION;
-            this.player.flipX=true;
-            if(curHero.anmRun != null && this.player.anims.currentAnim.key != curHero.anmRun){
-            	this.player.play(curHero.anmRun);
-            }
-        } else if (rightInputIsActive()) {
-            // If the RIGHT key is down, set the player velocity to move right
-            this.player.body.acceleration.x = ACCELERATION;
-            this.player.flipX=false;
-            if(curHero.anmRun != null && this.player.anims.currentAnim.key != curHero.anmRun){
-            	this.player.play(curHero.anmRun);
-            }
-        } else {
-            this.player.body.acceleration.x = 0;
-            if(curHero.anmIdl != null && this.player.anims.currentAnim.key != curHero.anmIdl){
-            	this.player.play(curHero.anmIdl);
-            }
-        }
-
         // STATE CODE
         if(this.playState===PLAYSTATE_BOSS){
             if(this.boss != undefined){
                 this.boss.update(time,delta);
             }
         }else if(this.playState===PLAYSTATE_MINIBOSS){
+
+        }else if(this.playState===PLAYSTATE_CUTSCENE){
 
         }else{
 
@@ -1225,6 +1443,10 @@ class GameScene extends Phaser.Scene {
             e.update(time,delta);
         });
 
+        this.bossDoors.children.each((e)=>{
+            e.update(time,delta);
+        });
+
         this.specialPlatforms.children.each((e)=>{
             e.update(time,delta);
         });
@@ -1235,7 +1457,7 @@ class GameScene extends Phaser.Scene {
         this.bullets.children.each((e)=>{
             e.update();
 //                 || e.y>H || e.y<0
-            if(e.x<playerX - W/2 || e.x>this.player.x + W/2 || e.y>H){
+            if(e.x<playerX - W/2 || e.x>this.player.x + W/2 || e.y>H*10){
                 e.destroy();
             }
         });
@@ -1280,18 +1502,22 @@ class GameScene extends Phaser.Scene {
         score = 0;
         lives = 3;
         level = 0;
+        kidsSaved = 0;
         chunksToFinish= 15;
         this.dashTimer=0;
         this.dashingTimer=0;
         if(this.hat){
         	this.hat.myDestroy();
         }
-        curHat = null;
-// 		hats = hatsDb.map(a => {return {...a}});
-		for(var i=0; i<hats.length; i++){
-			hats[i].hasHat=false;
-		}
+        // Ok, keep your damn hats.
+//        curHat = null;
+//		for(var i=0; i<hats.length; i++){
+//			hats[i].hasHat=false;
+//		}
 
+        // Keep your key too.
+        //playerHasKey=false;
+        this.playState = PLAYSTATE_MAIN;
         this.GAMEOVER=false;
         this.restart=true;
 

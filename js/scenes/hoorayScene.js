@@ -26,7 +26,7 @@ class HoorayScene extends Phaser.Scene{
         
         
 		let particles = this.add.particles('square');
-		var emitter = particles.createEmitter(
+		this.emitter = particles.createEmitter(
 		{
 		x:W/2,
 		y:H/2,
@@ -39,6 +39,9 @@ class HoorayScene extends Phaser.Scene{
 		tint: ['0xFC7E7E','0xFCD77E','0xFCF87E','0xAAFC7E','0x7EFCDD','0x7EA0FC','0xBD7EFC','0xffffff']
 		}
 		);
+
+//        let particles = this.add.particles('coin');
+
 
         this.anims.create(animConfigs.emyIdle);
     	this.anims.create(animConfigs.greenDotIdle);
@@ -64,8 +67,9 @@ class HoorayScene extends Phaser.Scene{
 
 		
 
-    	this.showHats = [];
-		this.refreshHats();
+    	//this.showHats = [];
+		//this.refreshHats();
+		this.showKey();
      
     	this.startText = this.add.text(centerX, H-32, "CONTINUE", { fontSize: '32px', fontFamily: 'FourBitRegular' });
         this.startText.setOrigin(0.5).setTint('0x00ff00');
@@ -87,6 +91,54 @@ class HoorayScene extends Phaser.Scene{
     
 	updateScore(){
         this.scoreText.setText("Coins: "+ score.toString());
+    }
+
+    showKey(){
+        	let showHatX=W/4;
+    		let showHatY=H/2;
+    		let scl = 2;
+            let that = this;
+
+            this.keyText = this.add.text(showHatX, showHatY+48, KEYPRICE.toString() + " coins", { fontSize: '28px', fontFamily: 'FourBitRegular' }).setOrigin(0.5);
+    		this.key = this.add.image(showHatX,showHatY,'key').setScale(scl);
+    		this.key.setInteractive().on('pointerdown', function(pointer, localX, localY, event){
+            				that.buyKey();
+            			},this).on('pointerover',function(){
+            				this.setScale(scl * 1.5);
+            				that.hatDescripText.x = that.key.x;
+
+            			}).on('pointerout',function(){
+            				this.setScale(scl);
+
+            			});
+
+    }
+
+    hideKey(){
+        this.key.visible = false;
+        this.key.y = 500000;
+        this.keyText.setText("");
+    }
+
+    buyKey(){
+        if(playerHasKey){
+            this.failSound.play();
+            return false;
+        }
+
+        if( score<KEYPRICE ){
+    			this.failSound.play();
+    			return false;
+    		}
+        playerHasKey = true;
+        score -= KEYPRICE;
+        this.buySound.play();
+        this.emitter.emitParticleAt(this.key.x, this.key.y, 50);
+        this.key.x = W-32;
+        this.key.y = 32;
+        this.keyText.setText("");
+//        this.hideKey();
+        this.updateScore();
     }
     
     refreshHats(){

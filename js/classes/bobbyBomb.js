@@ -78,6 +78,7 @@ class BobbyBomb extends Enemy {
 
     explode(){
         new Bullet(this.myScene,this.x,this.y,0,{'anm':'kapow','initSpeed':0,'destroyAfterAnim':true,'img':'kapow'});
+        this.myScene.soundFireExplode.play();
     }
 
 }

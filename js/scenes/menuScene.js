@@ -17,6 +17,7 @@ class MenuScene extends Phaser.Scene{
         this.startText = this.add.text(centerX, centerY+64, "START", { fontSize: '32px', fontFamily: 'FourBitRegular' }).setOrigin(0.5);
         this.startText.setInteractive().on('pointerdown', function(pointer, localX, localY, event){
             that.scene.start('GameScene');
+//            that.scene.start('HoorayScene');
         }).on('pointerover',function(){
 				this.setTint('0x00ff00');
 			}).on('pointerout',function(){
@@ -37,6 +38,7 @@ class MenuScene extends Phaser.Scene{
         this.anims.create(animConfigs.emyIdle);
         this.anims.create(animConfigs.blueyIdle);
         this.anims.create(animConfigs.greenieIdle);
+        this.anims.create(animConfigs.allSeeEyeIdle);
 
 
         this.H = 0;

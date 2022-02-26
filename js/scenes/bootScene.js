@@ -32,9 +32,20 @@ class BootScene extends Phaser.Scene{
         this.load.image('vikingHat', 'img/hats/VikingHelmet.png');
         this.load.image('hornHelmet', 'img/hats/horn knight helmet32x.png');
         this.load.image('headband', 'img/hats/headband.png');
-        this.load.image('tree', 'img/Tree2.png');
+        this.load.image('tree1', 'img/tree1.png');
         this.load.image('door', 'img/door.png');
         this.load.image('minidoor', 'img/minidoor.png');
+        this.load.image('minidoorOpen', 'img/minidoorOpen.png');
+        this.load.image('key', 'img/key.png');
+        this.load.image('heart', 'img/Heart.png');
+        this.load.image('flowerRd', 'img/flowerRd.png');
+        this.load.image('flowerOr', 'img/flowerOr.png');
+        this.load.image('flowerWt', 'img/flowerWt.png');
+        this.load.image('stump', 'img/stump.png');
+        this.load.image('grass', 'img/grass.png');
+        this.load.image('tree2', 'img/tree2.png');
+        this.load.image('blobCrown', 'img/blobCrown.png');
+
 
         this.load.spritesheet('fireball', 'img/fireball.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('greenDotIdle', 'img/GreenDotIdle.png',{ frameWidth: 32, frameHeight: 32 });
@@ -68,6 +79,7 @@ class BootScene extends Phaser.Scene{
         this.load.spritesheet('cakeHat', 'img/hats/cake.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('yigaHat', 'img/hats/bigYiga128.png',{ frameWidth: 128, frameHeight: 128 });
         this.load.spritesheet('evilEyeball', 'img/evil_eyeball.png',{ frameWidth: 32, frameHeight: 32 });
+        this.load.spritesheet('evilEyeballDie', 'img/evil_eyeball_die.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('bobTheBlob', 'img/bob_the_blob.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('bonyBoomBox', 'img/bony_the_boom_box.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('blueyWalk', 'img/Bluey.png',{ frameWidth: 32, frameHeight: 32 });
@@ -77,9 +89,19 @@ class BootScene extends Phaser.Scene{
         this.load.spritesheet('goblin', 'img/Goblin.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('greenie', 'img/Greenie.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('kapow', 'img/kapow.png',{ frameWidth: 128, frameHeight: 128 });
+        this.load.spritesheet('the_all_seeing_eye', 'img/the_all_seeing_eye.png',{ frameWidth: 32, frameHeight: 32 });
+        this.load.spritesheet('minidoorAnim', 'img/minidoorAnim.png',{ frameWidth: 32, frameHeight: 64 });
+        this.load.spritesheet('blobKing', 'img/blob_king.png',{ frameWidth: 96, frameHeight: 96 });
+        this.load.spritesheet('kidCry', 'img/little_girl_cry.png',{ frameWidth: 30, frameHeight: 34 });
+        this.load.spritesheet('kidAscend', 'img/little_girl_acsend.png',{ frameWidth: 30, frameHeight: 34 });
+        this.load.spritesheet('walkingDude', 'img/walking_dude.png',{ frameWidth: 32, frameHeight: 34 });
+        this.load.spritesheet('icyBlob', 'img/iceyBlob.png',{ frameWidth: 32, frameHeight: 34 });
+        this.load.spritesheet('toxicBoss', 'img/Toxic_Boss.png',{ frameWidth: 32, frameHeight: 34 });
+        this.load.spritesheet('toxicMinion', 'img/TOXIC_MINION.png',{ frameWidth: 34, frameHeight: 34 });
+        this.load.spritesheet('toxicBullet', 'img/toxicBullet.png',{ frameWidth: 16, frameHeight: 16 });
 
         
-        
+
         this.load.spritesheet('bossCrabWalk', 'img/MonsterBossWalk1.png',{ frameWidth: 448, frameHeight: 448 });
         this.load.image('crableg', 'img/crableg.png');
 
@@ -120,31 +142,196 @@ class BootScene extends Phaser.Scene{
         score = 0;
         level = 0;
         chunksToFinish = 15;
-        
-        hats = [
-//			{img:'gnomeHat',price:10,hasHat:false,hatClass:"Hat",descrip:"A nice red hat."},
-//			{img:'topHat',price:25,hasHat:false,hatClass:"HatTop",descrip:"Chance to spawn extra coins."},
-//			{img:'hornHelmet',price:25,hasHat:false,hatClass:"HatHornHelmet",descrip:"Blocks arrows."},
-//			{img:'alienHat',price:25,hasHat:false,hatClass:"Hat",descrip:"Alien Hat. Reduced gravity.",anm:"alienHat"},
-//			{img:'cakeHat',price:25,hasHat:false,hatClass:"Hat",descrip:"Extra Life.",anm:"cakeHat"},
-//			{img:'yigaHat',price:25,hasHat:false,hatClass:"Hat",descrip:"Yiga Clan Mask. Protection from spikes.",anm:"yigaHat",xoff:18,yoff:-40},
-//			{img:'headband',price:25,hasHat:false,hatClass:"Hat",descrip:"Headband. Forward dash.",yoff:-24},
-// 			{img:'vikingHat',price:100,hasHat:false,hatClass:"HatHelmet",descrip:"Protection from falling eggs."},
-// 			{img:'spikes',price:100,hasHat:false,hatClass:"Hat",descrip:"???"},
+        playerHasKey = true;
+        kidsSaved = 0;
 
+        hatsDb = [
+ 			{img:'blobCrown',price:0,hasHat:false,hatClass:"Hat",descrip:"Protection from blobs"},
+ 			//			{img:'gnomeHat',price:10,hasHat:false,hatClass:"Hat",descrip:"A nice red hat."},
+            //			{img:'topHat',price:25,hasHat:false,hatClass:"HatTop",descrip:"Chance to spawn extra coins."},
+            //			{img:'hornHelmet',price:25,hasHat:false,hatClass:"HatHornHelmet",descrip:"Blocks arrows."},
+            //			{img:'alienHat',price:25,hasHat:false,hatClass:"Hat",descrip:"Alien Hat. Reduced gravity.",anm:"alienHat"},
+            //			{img:'cakeHat',price:25,hasHat:false,hatClass:"Hat",descrip:"Extra Life.",anm:"cakeHat"},
+            //			{img:'yigaHat',price:25,hasHat:false,hatClass:"Hat",descrip:"Yiga Clan Mask. Protection from spikes.",anm:"yigaHat",xoff:18,yoff:-40},
+            //			{img:'headband',price:25,hasHat:false,hatClass:"Hat",descrip:"Headband. Forward dash.",yoff:-24},
+            // 			{img:'vikingHat',price:100,hasHat:false,hatClass:"HatHelmet",descrip:"Protection from falling eggs."},
+            // 			{img:'spikes',price:100,hasHat:false,hatClass:"Hat",descrip:"???"},
         ];
-// 		hatsClone = hats.map(a => {return {...a}});
+
+        hats = [
+ 			{img:'blobCrown',price:0,hasHat:false,hatClass:"Hat",descrip:"Protection from blobs"},
+            {img:'cakeHat',price:25,hasHat:false,hatClass:"Hat",descrip:"Extra Life.",anm:"cakeHat"},
+ 			{img:'hornHelmet',price:25,hasHat:false,hatClass:"HatHornHelmet",descrip:"Blocks arrows."},
+        ];
         curHat = null;
 
         heroes = [
             {img:'greenie',name:"Greenie",anmIdl:'greenieIdle',anmRun:'greenieWalk'},
             {img:'emyIdle',name:"Red Dot",anmIdl:'emyIdle',anmRun:'emyWalk'},
-            {img:'blueyWalk',name:"Bluey",anmIdl:'blueyIdle',anmRun:'blueyWalk',anmDie:'blueyDie'}
+            {img:'blueyWalk',name:"Bluey",anmIdl:'blueyIdle',anmRun:'blueyWalk',anmDie:'blueyDie'},
+            {img:'allSeeEyeIdle',name:"The All Seeing Eye",anmIdl:'allSeeEyeIdle',anmRun:'allSeeEyeWalk',anmDie:'allSeeEyeDie'}
         ];
         curHero = heroes[0];
 
         animConfigs = {};
-
+        animConfigs.toxicBullet = {
+            key: 'toxicBullet',
+            frames: this.anims.generateFrameNumbers('toxicBullet', { start: 0, end: 4, first: 0 }),
+            frameRate: 12,
+            repeat: -1
+        };
+        animConfigs.toxicMinionWalk = {
+            key: 'toxicMinionWalk',
+            frames: [
+                {key:'toxicMinion',frame:9,duration:1},
+                {key:'toxicMinion',frame:10,duration:1},
+                {key:'toxicMinion',frame:11,duration:1},
+                {key:'toxicMinion',frame:10,duration:1},
+            ],
+            frameRate: 8,
+            repeat: -1
+        };
+        animConfigs.toxicMinionSpawn = {
+            key: 'toxicMinionSpawn',
+            frames: this.anims.generateFrameNumbers('toxicMinion', { start: 0, end: 11, first: 0 }),
+            frameRate: 12,
+            repeat: 0
+        };
+        animConfigs.toxicMinionDie = {
+            key: 'toxicMinionDie',
+            frames: [
+                {key:'toxicMinion',frame:10,duration:1},
+                {key:'toxicMinion',frame:8,duration:1},
+                {key:'toxicMinion',frame:6,duration:1},
+                {key:'toxicMinion',frame:4,duration:1},
+                {key:'toxicMinion',frame:2,duration:1},
+            ],
+            frameRate: 24,
+            repeat: 0
+        };
+        animConfigs.toxicBossCan = {
+            key: 'toxicBossCan',
+            frames: [
+                {key:'toxicBoss',frame:0,duration:3},
+                {key:'toxicBoss',frame:0,duration:3},
+                {key:'toxicBoss',frame:0,duration:3},
+            ],
+            frameRate: 1,
+            repeat: 0
+        };
+        animConfigs.toxicBossIntro = {
+            key: 'toxicBossIntro',
+            frames: this.anims.generateFrameNumbers('toxicBoss', { start: 0, end: 15, first: 0 }),
+            frameRate: 11,
+            repeat: 0
+        };
+        animConfigs.toxicBossWalk = {
+            key: 'toxicBossWalk',
+            frames: this.anims.generateFrameNumbers('toxicBoss', { start: 16, end: 19, first: 16 }),
+            frameRate: 8,
+            repeat: -1
+        };
+        animConfigs.toxicBossDie = {
+            key: 'toxicBossDie',
+            frames: this.anims.generateFrameNumbers('toxicBoss', { start: 20, end: 42, first: 20 }),
+            frameRate: 8,
+            repeat: 0
+        };
+        animConfigs.icyBlobIdle = {
+            key: 'icyBlobIdle',
+            frames: this.anims.generateFrameNumbers('icyBlob', { start: 0, end: 1, first: 0 }),
+            frameRate: 4,
+            repeat: -1
+        };
+        animConfigs.walkingDude = {
+            key: 'walkingDude',
+            frames: this.anims.generateFrameNumbers('walkingDude', { start: 0, end: 1, first: 0 }),
+            frameRate: 4,
+            repeat: -1
+        };
+        animConfigs.kidCry = {
+            key: 'kidCry',
+            frames: this.anims.generateFrameNumbers('kidCry', { start: 0, end: 1, first: 0 }),
+            frameRate: 2,
+            repeat: -1
+        };
+        animConfigs.kidAscend = {
+            key: 'kidAscend',
+            frames: this.anims.generateFrameNumbers('kidAscend', { start: 0, end: 1, first: 0 }),
+            frameRate: 2,
+            repeat: -1
+        };
+        animConfigs.blobKingIdle = {
+            key: 'blobKingIdle',
+            frames: [
+                {key:'blobKing',frame:0,duration:3},
+                {key:'blobKing',frame:1,duration:3},
+                {key:'blobKing',frame:2,duration:3},
+                {key:'blobKing',frame:0,duration:3},
+                {key:'blobKing',frame:3,duration:2},
+            ],
+            frameRate: 1,
+            repeat: -1
+        };
+        animConfigs.blobKingWalk = {
+            key: 'blobKingWalk',
+            frames: [
+                {key:'blobKing',frame:2,duration:3},
+                {key:'blobKing',frame:3,duration:3},
+                {key:'blobKing',frame:2,duration:3},
+                {key:'blobKing',frame:3,duration:3},
+                {key:'blobKing',frame:4,duration:2},
+            ],
+            frameRate: 2,
+            repeat: -1
+        };
+        animConfigs.blobKingDie = {
+            key: 'blobKingDie',
+            frames: this.anims.generateFrameNumbers('blobKing', { start: 4, end: 17, first: 4 }),
+            frameRate: 8,
+            repeat: 0
+        };
+        animConfigs.miniDoorPulse = {
+            key: 'miniDoorPulse',
+            frames: [
+            	{key:'minidoorAnim',frame:0,duration:1},
+            	{key:'minidoorAnim',frame:1,duration:1},
+            	{key:'minidoorAnim',frame:2,duration:1},
+            	{key:'minidoorAnim',frame:1,duration:1},
+            ],
+            frameRate: 8,
+            repeat: 0
+        };
+        animConfigs.miniDoorOpen = {
+            key: 'miniDoorOpen',
+            frames: this.anims.generateFrameNumbers('minidoorAnim', { start: 10, end: 21, first: 1 }),
+            frameRate: 6,
+            repeat: 0
+        };
+        animConfigs.miniDoorBurn = {
+            key: 'miniDoorBurn',
+            frames: this.anims.generateFrameNumbers('minidoorAnim', { start: 3, end: 9, first: 1 }),
+            frameRate: 12,
+            repeat: 0
+        };
+        animConfigs.allSeeEyeIdle = {
+            key: 'allSeeEyeIdle',
+            frames: this.anims.generateFrameNumbers('the_all_seeing_eye', { start: 0, end: 1, first: 0 }),
+            frameRate: 1,
+            repeat: -1
+        };
+        animConfigs.allSeeEyeWalk = {
+            key: 'allSeeEyeWalk',
+            frames: this.anims.generateFrameNumbers('the_all_seeing_eye', { start: 2, end: 2, first: 2 }),
+            frameRate: 1,
+            repeat: -1
+        };
+        animConfigs.allSeeEyeDie = {
+            key: 'allSeeEyeDie',
+            frames: this.anims.generateFrameNumbers('the_all_seeing_eye', { start: 3, end: 16, first: 3 }),
+            frameRate: 12,
+            repeat: -1
+        };
         animConfigs.kapow = {
             key: 'kapow',
             frames: this.anims.generateFrameNumbers('kapow', { start: 0, end: 2, first: 0 }),
@@ -245,6 +432,12 @@ class BootScene extends Phaser.Scene{
             key: 'evilEyeball',
             frames: this.anims.generateFrameNumbers('evilEyeball', { start: 0, end: 18, first: 0 }),
             frameRate: 24,
+            repeat: -1
+        };
+        animConfigs.evilEyeballDie = {
+            key: 'evilEyeballDie',
+            frames: this.anims.generateFrameNumbers('evilEyeballDie', { start: 0, end: 24, first: 0 }),
+            frameRate: 19,
             repeat: -1
         };
         animConfigs.greenDotIdle = {
