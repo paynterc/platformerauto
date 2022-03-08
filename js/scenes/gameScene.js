@@ -83,6 +83,9 @@ class GameScene extends Phaser.Scene {
         this.player.body.maxVelocity.setTo(MAX_SPEED, MAX_SPEED * 5); // x, y
         this.player.body.drag.setTo(DRAG, 0);
         this.player.body.pushable = true;
+        this.player.body.width=30;
+        this.player.body.height=31;
+        this.player.body.setOffset(1,0);
         this.player.depth = 100;
         if(curHero.anmIdl != null){
             this.player.play(curHero.anmIdl);
@@ -267,7 +270,7 @@ class GameScene extends Phaser.Scene {
 //         shield.body.setAllowGravity(false);
 //         shield.body.setImmovable(true);
 //         this.bulletShields.add(shield);
-// 		   new BobTheBlob(this,this.player.x+128,this.player.y-64);
+// 		   new GoblinBomber(this,this.player.x+128,this.player.y-64,1,{img:'goblinBomber'});
 // 		   new Goblin(this,this.player.x+128,this.player.y-64,1,{'flipX':Phaser.Math.Between(0,1)});
 // 		   new EvilEyeball(this,this.player.x+128,this.player.y-64,1,{'flipX':Phaser.Math.Between(0,1)});
 //         new Enemy(this, this.player.x+128,this.player.y-128,1,{img:'bonyBoomBox',anmIdle:'bonyIdle',anmWalk:'bonyWalk',anmDie:'bonyDie'});
@@ -612,7 +615,7 @@ class GameScene extends Phaser.Scene {
                             if(roll<=5){
 //                                new Enemy(this, this.chunkX+(i*UNITSIZE),-128);
 
-                                emy1roll = Phaser.Math.Between(1,6);
+                                emy1roll = Phaser.Math.Between(1,7);
                                 switch (emy1roll) {
                                     case 1:
                                         new Enemy(this, this.chunkX+(i*UNITSIZE),-128);
@@ -631,7 +634,12 @@ class GameScene extends Phaser.Scene {
                                         break;
                                     case 6:
                                         let goblin = new Goblin(this, this.chunkX+(i*UNITSIZE),-64,1,{'flipX':Phaser.Math.Between(0,1)});
+                                        if(Phaser.Math.Between(1,7)==7 ){
+                                            new GoblinBomber(this,this.chunkX+(i*UNITSIZE)+UNITSIZE,-64,1,{img:'goblinBomber'});
+                                        }
                                         break;
+                                    case 7:
+                                        new GoblinBomber(this,this.chunkX+(i*UNITSIZE),-64,1,{img:'goblinBomber'});
                                     }
 
                             }else if(roll>=5 && roll<=10){
@@ -807,10 +815,9 @@ class GameScene extends Phaser.Scene {
 
 
         //toggle gates
-        let T1 = new Gate(this,roomX+(9*UNITSIZE),roomY+(7*UNITSIZE)).setVisible(false);
-//        this.gates.add(T1);
-        let T2 = new Gate(this,roomX+(9*UNITSIZE),roomY+(15*UNITSIZE)).setVisible(false);
-//        this.gates.add(T2);
+        let T1 = new Gate(this,roomX+(6*UNITSIZE),roomY+(7*UNITSIZE)).setVisible(false);
+        let T2 = new Gate(this,roomX+(12*UNITSIZE),roomY+(7*UNITSIZE)).setVisible(false);
+        let T3 = new Gate(this,roomX+(9*UNITSIZE),roomY+(15*UNITSIZE)).setVisible(false);
 
 
         //doors
@@ -853,21 +860,27 @@ class GameScene extends Phaser.Scene {
 //        let miniBoss = new BossEvilEyeball(this,roomX + UNITSIZE + 32, roomY + UNITSIZE + (32),1,{'defaultAcc':100,'maxVelocity':200,'onDestroy':myOnDestroy});
 //        let miniBoss = new BossBlobKing(this,roomX + UNITSIZE + 32, roomY + UNITSIZE + (32),1,{'defaultAcc':50,'maxVelocity':100,'onDestroy':myOnDestroy});
 
-//        let rnd = Phaser.Math.Between(1,3);
-        let rnd = 3;
+        let rnd = Phaser.Math.Between(1,6);
+//        let rnd = 6;
+        let roomMid = roomX + UNITSIZE*5+(UNITSIZE/2);
+        let B = undefined;
         if(rnd==1){
-
-            new BossEvilEyeball(this,roomX + UNITSIZE + 32, roomY + UNITSIZE + (32),1,{'defaultAcc':100,'maxVelocity':200,'onDestroy':myOnDestroy});
+            B = new BossEvilEyeball(this,roomMid, roomY + UNITSIZE + (32),1,{'defaultAcc':100,'maxVelocity':200,'onDestroy':myOnDestroy});
         }else if(rnd==2){
-
-            new BossBlobKing(this,roomX + UNITSIZE + 32, roomY + UNITSIZE + (32),1,{'defaultAcc':50,'maxVelocity':100,'onDestroy':myOnDestroy});
+            B = new BossBlobKing(this,roomMid, roomY + UNITSIZE + (32),1,{'defaultAcc':50,'maxVelocity':100,'onDestroy':myOnDestroy});
+        }else if(rnd==3){
+            B = new BossAvocado(this,roomMid, roomY + UNITSIZE + (32),1,{'defaultAcc':50,'maxVelocity':100,'onDestroy':myOnDestroy});
+        }else if(rnd==4){
+            B = new BossToxic(this,roomMid, roomY + UNITSIZE + (32),1,{'defaultAcc':50,'maxVelocity':100,'onDestroy':myOnDestroy});
+        }else if(rnd==5){
+            B = new BossToxic(this,roomMid, roomY + UNITSIZE + (32),1,{'defaultAcc':50,'maxVelocity':100,'onDestroy':myOnDestroy});
         }else{
-
-            new BossToxic(this,roomX + UNITSIZE + 32, roomY + UNITSIZE + (32),1,{'defaultAcc':50,'maxVelocity':100,'onDestroy':myOnDestroy});
+            B = new BuffAmongus(this,roomMid, roomY + UNITSIZE + (32),1,{'defaultAcc':100,'maxVelocity':100,'onDestroy':myOnDestroy,img:'buffAmg'});
         }
         this.cameras.main.setBackgroundColor(0x000000);
         this.player.x = this.resetX;
         this.player.y = this.resetY;
+        B.x = this.player.x;
     }
 
     gotHat(hatKey){
@@ -1084,7 +1097,8 @@ class GameScene extends Phaser.Scene {
             this.events.emit('kidsUpdated');
             console.log('kidsSaved',kidsSaved);
             console.log('remainder',kidsSaved%3);
-            if(kidsSaved % 3===0){
+
+            if(kidsSaved % 3===0 || curHat=="cakeHat"){
                 lives++;
                 this.events.emit('extraLife');
             }
@@ -1133,13 +1147,15 @@ class GameScene extends Phaser.Scene {
         if(this.restart) return false;
         if(this.playerDead) return false;
         this.playerDead = true;
-		
-		if(curHat=="cakeHat"){
-			this.hat.destroy();
-			curHat=null;
-		}else{
-        	lives--;
-		}
+
+		 lives--;
+
+//		if(curHat=="cakeHat"){
+//			this.hat.destroy();
+//			curHat=null;
+//		}else{
+//        	lives--;
+//		}
         this.events.emit('playerDied');
         this.soundPlayerDie.play();
         if(lives<0){

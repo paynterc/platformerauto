@@ -1,7 +1,7 @@
-class BossToxic extends MiniBoss {
+class BuffAmongus extends MiniBoss {
     mySetScale(){
-            this.setScale(3);
-            this.myScale = 3;
+            this.setScale(1);
+            this.myScale = 1;
     }
 
     init() {
@@ -25,17 +25,16 @@ class BossToxic extends MiniBoss {
         this.preAttackTime = 60;
         this.preAttackTimer = this.preAttackTime;
 
-        this.anmDefault = 'toxicBossWalk';
-        this.anmIdle = 'toxicBossWalk';
-        this.anmWalk = 'toxicBossWalk';
-        this.anmRun = 'toxicBossWalk'
-        this.anmHit = 'toxicBossWalk';
-        this.anmAttack = 'toxicBossWalk';
-        this.anmDie = 'toxicBossDie';
-        this.play(this.anmWalk);
+        this.anmDefault = 'buffAmgWalk';
+        this.anmIdle = 'buffAmgWalk';
+        this.anmWalk = 'buffAmgWalk';
+        this.anmRun = 'buffAmgWalk'
+        this.anmHit = 'buffAmgWalk';
+        this.anmAttack = 'buffAmgPunch';
+        this.anmDie = 'buffAmgDie';
 
         // get it to sit right on the floor. I have an empty border around the sprite
-		this.body.setSize(this.width , 32);
+		this.body.setSize(40, 78);
 
         this.myScene.events.emit('bossHealthUpdate',1);
         this.myScene.events.emit('bossArrives');
@@ -45,11 +44,11 @@ class BossToxic extends MiniBoss {
         this.x+=UNITSIZE * 4;
         this.body.acceleration.x = 0;
         this.body.velocity.x = 0;
-        this.play('toxicBossCan');
+        this.play('buffAmgIntro');
         this.myScene.playState = PLAYSTATE_CUTSCENE;
         this.myScene.cameras.main.stopFollow();
         this.myScene.cameras.main.startFollow(this);
-        this.introTimer = 600;
+        this.introTimer = 200;
     }
 
     startMovement(){
@@ -65,24 +64,15 @@ class BossToxic extends MiniBoss {
 
 
     intro(time,delta){
-        if(this.anims.currentAnim.key=='toxicBossCan'){
-            if(this.anims.currentFrame.index === this.anims.getTotalFrames()){
-                this.play('toxicBossIntro');
+            this.introTimer--;
+            if(this.introTimer<=0){
+                this.myState = STATE_EN_MOVE;
+                this.myScene.cameras.main.stopFollow();
+                this.myScene.cameras.main.startFollow(this.myScene.player);
+                this.myScene.playState = PLAYSTATE_MINIBOSS;
+                this.play(this.anmWalk);
+                this.startMovement();
             }
-
-        }else{
-                if(this.anims.currentFrame && this.anims.currentFrame.index === this.anims.getTotalFrames()){
-                    this.introTimer-=delta;
-                    if(this.introTimer<=0){
-                        this.myState = STATE_EN_MOVE;
-                        this.myScene.cameras.main.stopFollow();
-                        this.myScene.cameras.main.startFollow(this.myScene.player);
-                        this.myScene.playState = PLAYSTATE_MINIBOSS;
-                        this.startMovement();
-                    }
-
-                }
-        }
 
     }
 
@@ -104,39 +94,21 @@ class BossToxic extends MiniBoss {
         }
         this.preAttackTimer = this.preAttackTime;
         this.setTint("0xffffff");
-        this.spawnMinions();
         // flashing is over, do the attack
 //        let angle = this.flipX ? 180 : 0;
 //        new Bullet(this.myScene,this.x,this.y,0,{anm:'fireball','initSpeed':100});
 //        new Bullet(this.myScene,this.x,this.y,90,{anm:'fireball','initSpeed':100});//down
 //        new Bullet(this.myScene,this.x,this.y,180,{anm:'fireball','initSpeed':100});
-//        new Bullet(this.myScene,this.x,this.y,270,{anm:'fireball','initSpeed':100});
+        new Bullet(this.myScene,this.x,this.y,270,{anm:'fireball','initSpeed':100});
         this.walk();
     }
 
-    spawnMinions(){
-        for(let i=0;i<5;i++){
-            let emy = new Enemy(this.myScene,this.x,this.y,1,{anmDefault:'toxicMinionWalk',maxVelocity:500,killAfterTime:500,anmDie:'toxicMinionDie',coins:0,hp:2});
-            emy.body.velocity.y = -30;
-            emy.body.velocity.x = Phaser.Math.Between(-500,500);
-        }
 
-                new Bullet(this.myScene,this.x,this.y,0,{anm:'toxicBullet','initSpeed':100,img:'toxicBullet'});//right
-                new Bullet(this.myScene,this.x,this.y,270,{anm:'toxicBullet','initSpeed':100,img:'toxicBullet'});//up
-                new Bullet(this.myScene,this.x,this.y,180,{anm:'toxicBullet','initSpeed':100,img:'toxicBullet'});//left
-
-    }
 
     onCorpseDestroy = function(){
 
-                    this.myScene.dropHatLoot('hornHelmet',this.x,this.y);
+        this.myScene.dropHatLoot('hornHelmet',this.x,this.y);
 
-//                    new HatLoot(this.myScene,this.x,this.y,{'hatKey':'cakeHat','img':'cakeHat'});
-
-//                curHat = 'hornHelmet';
-//                this.myScene.gotHat(curHat);
-//                this.myScene.soundCoinPickup.play();
-//                this.myScene.spawnHat();
     }
 
 }

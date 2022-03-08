@@ -1,7 +1,8 @@
-class BossEvilEyeball extends Enemy {
+class BossDragon extends Enemy {
     mySetScale(){
-            this.setScale(3);
-            this.myScale = 3;
+
+            this.setScale(2);
+            this.myScale = 2;
     }
 
     init() {
@@ -11,30 +12,34 @@ class BossEvilEyeball extends Enemy {
         this.defaultAcc = 5;
         this.defaultVelocityY = 45;
         this.body.velocity.y = this.defaultVelocityY ;
-        this.scaleX = this.myScale;
-        this.scaleY = this.myScale;
+
         this.maxHp = 50;
         this.hp = this.maxHp;
-
+        this.coins = 50;
 
         this.myAttackFrequency = 500;
         this.myAttackTimer = this.myAttackFrequency;
         // maybe use this for multishots
+        this.maxShots = 10;
+        this.shotCounter = 0;
+
+        this.shotDelay = 30;
         this.nextShoot = 0;
-        this.myDelay = 4000;
+
         this.preAttackTime = 60;
         this.preAttackTimer = this.preAttackTime;
 
-        this.anmIdle = 'evilEyeball';
-        this.anmWalk = 'evilEyeball';
-        this.anmRun = 'evilEyeball'
-        this.anmHit = 'evilEyeball';
-        this.anmAttack = 'evilEyeball';
-        this.anmDie = 'evilEyeballDie';
+    	this.body.setSize(48, 48)
+        this.body.setOffset(24,12)
+        this.anmIdle = 'forestDragonWalk';
+        this.anmWalk = 'forestDragonWalk';
+        this.anmRun = 'forestDragonWalk'
+        this.anmHit = 'forestDragonWalk';
+        this.anmAttack = 'forestDragonFire';
+        this.anmDie = 'forestDragonWalk';
         this.play(this.anmWalk);
 
         // get it to sit right on the floor. I have an empty border around the sprite
-		this.body.setSize(this.width - this.scaleX, this.height - this.scaleY)
         this.myScene.events.emit('bossHealthUpdate',1);
         this.myScene.events.emit('bossArrives');
 
@@ -71,9 +76,6 @@ class BossEvilEyeball extends Enemy {
         this.myPreHit(player);
         if(player.y <= this.y-UNITSIZE){
             this.myScene.shakeIt();
-//             player.body.velocity.y = ACCELERATION *-1;
-
-
             this.hp-=1;
             this.myScene.events.emit('bossHealthUpdate',this.hp/this.maxHp);
 
@@ -107,6 +109,8 @@ class BossEvilEyeball extends Enemy {
     attack(time,delta){
         this.myState = STATE_EN_ATTACK;
 
+
+
         // do some flashing first. As long as state is STATE_EN_ATTACK, this code should keep running.
         if(this.preAttackTimer>0){
             this.preAttackTimer --;
@@ -119,17 +123,36 @@ class BossEvilEyeball extends Enemy {
                 this.setTint("0xffffff");
             }
             return false;
-        }
-        this.preAttackTimer = this.preAttackTime;
-        this.setTint("0xffffff");
+        }else{
+            if(this.anmAttack && this.anims.currentAnim && this.anims.currentAnim.key != this.anmAttack){
+                this.play(this.anmAttack);
+            }
+            this.setTint("0xffffff");
 
-        // flashing is over, do the attack
-        let angle = this.flipX ? 180 : 0;
-        new Bullet(this.myScene,this.x,this.y,0,{anm:'fireball','initSpeed':100});
-        new Bullet(this.myScene,this.x,this.y,90,{anm:'fireball','initSpeed':100});
-        new Bullet(this.myScene,this.x,this.y,180,{anm:'fireball','initSpeed':100});
-        new Bullet(this.myScene,this.x,this.y,270,{anm:'fireball','initSpeed':100});
-        this.walk();
+            if(this.shotCounter>=this.maxShots){
+                    // at end of volley
+                    this.shotCounter=0;
+                    this.preAttackTimer = this.preAttackTime;
+                    this.nextShoot=0;
+                    this.preAttackTimer =  this.preAttackTime;
+                    this.walk();// gets us out of attack mode
+            }else{
+                    // fire a bullet
+                    if(this.nextShoot<=0){
+                        this.shotCounter++;
+                        this.nextShoot = this.shotDelay;
+                        let angle = this.flipX ? 180 : 0;
+                        let xoff = this.flipX ? -48 : 48;
+                        new Bullet(this.myScene,this.x+xoff,this.y-8,angle,{anm:'fireball','initSpeed':100});
+                    }else{
+                        this.nextShoot--;
+                    }
+            }
+
+
+        }
+
+
     }
 
     onCorpseDestroy = function(){

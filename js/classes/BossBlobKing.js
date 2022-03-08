@@ -38,8 +38,33 @@ class BossBlobKing extends Enemy {
         this.myScene.events.emit('bossHealthUpdate',1);
         this.myScene.events.emit('bossArrives');
 
+        this.myState = STATE_EN_INTRO;
+        this.myScene.playState = PLAYSTATE_CUTSCENE;
+        this.myScene.cameras.main.stopFollow();
+        this.myScene.cameras.main.startFollow(this);
+        this.introTimer = 100;
 
+    }
 
+    intro(time,delta){
+            this.introTimer--;
+            if(this.introTimer<=0){
+                this.myState = STATE_EN_MOVE;
+                this.myScene.cameras.main.stopFollow();
+                this.myScene.cameras.main.startFollow(this.myScene.player);
+                this.myScene.playState = PLAYSTATE_MINIBOSS;
+                this.startMovement();
+            }
+    }
+
+    startMovement(){
+        if(this.myState!=STATE_EN_INTRO){
+                if(this.body.touching.down && !this.walkStarted){
+                    this.walkStarted=true;
+                    this.body.acceleration.x = this.defaultAcc;
+                    this.myState = STATE_EN_MOVE;
+                }
+        }
     }
 
     hit(player){
@@ -101,10 +126,10 @@ class BossBlobKing extends Enemy {
 
         // flashing is over, do the attack
         let angle = this.flipX ? 180 : 0;
-        new Bullet(this.myScene,this.x,this.y,0,{anm:'fireball','initSpeed':100});
-        new Bullet(this.myScene,this.x,this.y,90,{anm:'fireball','initSpeed':100});
-        new Bullet(this.myScene,this.x,this.y,180,{anm:'fireball','initSpeed':100});
-        new Bullet(this.myScene,this.x,this.y,270,{anm:'fireball','initSpeed':100});
+        new Bullet(this.myScene,this.x,this.y,0,{anm:'fireball','initSpeed':100,img:'fireball'});
+        new Bullet(this.myScene,this.x,this.y,90,{anm:'fireball','initSpeed':100,img:'fireball'});
+        new Bullet(this.myScene,this.x,this.y,180,{anm:'fireball','initSpeed':100,img:'fireball'});
+        new Bullet(this.myScene,this.x,this.y,270,{anm:'fireball','initSpeed':100,img:'fireball'});
         this.walk();
     }
 

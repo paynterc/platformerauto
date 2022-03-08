@@ -1,7 +1,7 @@
-class BossEvilEyeball extends Enemy {
+class BossAvocado extends Enemy {
     mySetScale(){
-            this.setScale(3);
-            this.myScale = 3;
+            this.setScale(1);
+            this.myScale = 1;
     }
 
     init() {
@@ -25,24 +25,30 @@ class BossEvilEyeball extends Enemy {
         this.preAttackTime = 60;
         this.preAttackTimer = this.preAttackTime;
 
-        this.anmIdle = 'evilEyeball';
-        this.anmWalk = 'evilEyeball';
-        this.anmRun = 'evilEyeball'
-        this.anmHit = 'evilEyeball';
-        this.anmAttack = 'evilEyeball';
-        this.anmDie = 'evilEyeballDie';
+        this.anmDefault = 'avocadoWalk';
+        this.anmIdle = 'avocadoWalk';
+        this.anmWalk = 'avocadoWalk';
+        this.anmRun = 'avocadoWalk'
+        this.anmHit = 'avocadoWalk';
+        this.anmAttack = 'avocadoWalk';
+        this.anmDie = 'avocadoWalk';
         this.play(this.anmWalk);
 
         // get it to sit right on the floor. I have an empty border around the sprite
-		this.body.setSize(this.width - this.scaleX, this.height - this.scaleY)
+		this.body.setSize(96, 96)
+		this.body.setOffset(0,4)
         this.myScene.events.emit('bossHealthUpdate',1);
         this.myScene.events.emit('bossArrives');
 
         this.myState = STATE_EN_INTRO;
+        this.x+=UNITSIZE * 4;
+        this.body.acceleration.x = 0;
+        this.body.velocity.x = 0;
+        this.play('avocadoSpawn');
         this.myScene.playState = PLAYSTATE_CUTSCENE;
         this.myScene.cameras.main.stopFollow();
         this.myScene.cameras.main.startFollow(this);
-        this.introTimer = 100;
+        this.introTimer = 150;
 
     }
 
@@ -53,6 +59,7 @@ class BossEvilEyeball extends Enemy {
                 this.myScene.cameras.main.stopFollow();
                 this.myScene.cameras.main.startFollow(this.myScene.player);
                 this.myScene.playState = PLAYSTATE_MINIBOSS;
+                this.play(this.anmWalk);
                 this.startMovement();
             }
     }
@@ -76,10 +83,11 @@ class BossEvilEyeball extends Enemy {
 
             this.hp-=1;
             this.myScene.events.emit('bossHealthUpdate',this.hp/this.maxHp);
+            this.myScene.soundDropFall.play();
 
             if(this.hp<1){
                 this.kill();
-                this.myScene.soundDropFall.play();
+
                 for(let i=0;i<this.coins;i++){
                     new Coin(this.myScene,this.x,this.y);
                 }
@@ -98,7 +106,7 @@ class BossEvilEyeball extends Enemy {
             if(this.myAttackTimer<1){
                 this.myAttackTimer = this.myAttackFrequency;
 
-                this.attack();
+                this.attack(time,delta);
             }
         }
 
@@ -125,21 +133,20 @@ class BossEvilEyeball extends Enemy {
 
         // flashing is over, do the attack
         let angle = this.flipX ? 180 : 0;
-        new Bullet(this.myScene,this.x,this.y,0,{anm:'fireball','initSpeed':100});
-        new Bullet(this.myScene,this.x,this.y,90,{anm:'fireball','initSpeed':100});
-        new Bullet(this.myScene,this.x,this.y,180,{anm:'fireball','initSpeed':100});
-        new Bullet(this.myScene,this.x,this.y,270,{anm:'fireball','initSpeed':100});
+        new Bullet(this.myScene,this.x,this.y,0,{anm:'fireball','initSpeed':100,img:'fireball'});
+        new Bullet(this.myScene,this.x,this.y,90,{anm:'fireball','initSpeed':100,img:'fireball'});
+        new Bullet(this.myScene,this.x,this.y,180,{anm:'fireball','initSpeed':100,img:'fireball'});
+        new Bullet(this.myScene,this.x,this.y,270,{anm:'fireball','initSpeed':100,img:'fireball'});
         this.walk();
     }
 
     onCorpseDestroy = function(){
-                this.myScene.dropHatLoot('cakeHat',this.x,this.y);
-
-//                    new HatLoot(this,this.x,this.y,{'hatKey':'topHat','img':'topHat'});
-//                curHat = 'topHat';
+//                curHat = 'blobCrown';
 //                this.myScene.gotHat(curHat);
 //                this.myScene.soundCoinPickup.play();
 //                this.myScene.spawnHat();
+//                new HatLoot(this,this.x,this.y,{'hatKey':'blobCrown','img':'blobCrown'});
+                this.myScene.dropHatLoot('blobCrown',this.x,this.y);
     }
 
 }

@@ -33,7 +33,7 @@ class Shooter extends Phaser.Physics.Arcade.Sprite {
 
     shoot(){
 
-        let bullet = new Bullet(this.myScene,this.x,this.y,this.angle,{anm:'fireball'});
+        let bullet = new Bullet(this.myScene,this.x,this.y,this.angle,{anm:'fireball',img:'fireball'});
 
     }
 

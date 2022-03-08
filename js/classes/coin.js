@@ -2,8 +2,8 @@ class Coin extends Loot {
 
 
     onPickup(player){
-            score++;
-
+            score += this.addGold;
+            this.myScene.events.emit('scoreUpdated');
             this.myScene.soundCoinPickup.play();
     }
 

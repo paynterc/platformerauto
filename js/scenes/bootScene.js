@@ -99,6 +99,11 @@ class BootScene extends Phaser.Scene{
         this.load.spritesheet('toxicBoss', 'img/Toxic_Boss.png',{ frameWidth: 32, frameHeight: 34 });
         this.load.spritesheet('toxicMinion', 'img/TOXIC_MINION.png',{ frameWidth: 34, frameHeight: 34 });
         this.load.spritesheet('toxicBullet', 'img/toxicBullet.png',{ frameWidth: 16, frameHeight: 16 });
+        this.load.spritesheet('goblinBomber', 'img/goblinBomber.png',{ frameWidth: 19, frameHeight: 19 });
+        this.load.spritesheet('avocadoSpawn', 'img/avocadoSpawn.png',{ frameWidth: 100, frameHeight: 100 });
+        this.load.spritesheet('avocadoWalk', 'img/avocadoWalk.png',{ frameWidth: 100, frameHeight: 100 });
+        this.load.spritesheet('forestDragon', 'img/forest_dragon .png',{ frameWidth: 96, frameHeight: 60 });
+        this.load.spritesheet('buffAmg', 'img/buffAmongus.png',{ frameWidth: 125, frameHeight: 82 });
 
         
 
@@ -174,6 +179,82 @@ class BootScene extends Phaser.Scene{
         curHero = heroes[0];
 
         animConfigs = {};
+
+        animConfigs.buffAmgIntro = {
+            key: 'buffAmgIntro',
+            frames: this.anims.generateFrameNumbers('buffAmg', { start: 0, end: 4, first: 0 }),
+            frameRate: 4,
+            repeat: 0
+        };
+        animConfigs.buffAmgWalk = {
+            key: 'buffAmgWalk',
+            frames: this.anims.generateFrameNumbers('buffAmg', { start: 5, end: 8, first: 5 }),
+            frameRate: 8,
+            repeat: -1
+        };
+        animConfigs.buffAmgAttack1 = {
+            key: 'buffAmgAttack1',
+            frames: this.anims.generateFrameNumbers('buffAmg', { start: 0, end: 4, first: 0 }),
+            frameRate: 32,
+            repeat: 0
+        };
+        animConfigs.buffAmgPunch = {
+            key: 'buffAmgPunch',
+            frames: this.anims.generateFrameNumbers('buffAmg', { start: 9, end: 10, first: 9 }),
+            frameRate: 32,
+            repeat: 0
+        };
+        animConfigs.buffAmgDie = {
+            key: 'buffAmgDie',
+            frames: this.anims.generateFrameNumbers('buffAmg', { start: 11, end: 29, first: 11 }),
+            frameRate: 8,
+            repeat: 0
+        };
+        animConfigs.forestDragonWalk = {
+            key: 'forestDragonWalk',
+            frames: [
+                {key:'forestDragon',frame:0,duration:1},
+            ],
+            frameRate: 1,
+            repeat: -1
+        };
+        animConfigs.forestDragonFire = {
+            key: 'forestDragonFire',
+            frames: this.anims.generateFrameNumbers('forestDragon', { start: 0, end: 1, first: 0 }),
+            frameRate: 24,
+            repeat: -1
+        };
+        animConfigs.avocadoSpawn = {
+            key: 'avocadoSpawn',
+            frames: this.anims.generateFrameNumbers('avocadoSpawn', { start: 0, end: 10, first: 0 }),
+            frameRate: 14,
+            repeat: 0
+        };
+        animConfigs.avocadoWalk = {
+            key: 'avocadoWalk',
+            frames: this.anims.generateFrameNumbers('avocadoWalk', { start: 0, end: 3, first: 0 }),
+            frameRate: 14,
+            repeat: -1
+        };
+        animConfigs.goblinBomberIdle = {
+            key: 'goblinBomberIdle',
+            frames: this.anims.generateFrameNumbers('goblinBomber', { start: 0, end: 26, first: 0 }),
+            frameRate: 14,
+            repeat: -1
+        };
+        animConfigs.goblinBomberAttack = {
+            key: 'goblinBomberAttack',
+            frames: this.anims.generateFrameNumbers('goblinBomber', { start: 27, end: 37, first: 0 }),
+            frameRate: 14,
+            repeat: 0
+        };
+        animConfigs.goblinBomberDie = {
+            key: 'goblinBomberDie',
+            frames: this.anims.generateFrameNumbers('goblinBomber', { start: 38, end: 51, first: 0 }),
+            frameRate: 14,
+            repeat: 0
+        };
+
         animConfigs.toxicBullet = {
             key: 'toxicBullet',
             frames: this.anims.generateFrameNumbers('toxicBullet', { start: 0, end: 4, first: 0 }),

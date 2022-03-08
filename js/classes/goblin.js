@@ -52,8 +52,9 @@ class Goblin extends Enemy {
     shoot(){
 //        let angle = this.flipX ? 225 : -45;
         let angle = this.flipX ? 180 : 0;
+        let xoff = this.flipX ? -16 : 16;
 //        let arrow = new Arrow(this.myScene,this.x,this.y,angle,{'img':'arrow','initSpeed':this.arrowSpd});
-        let bullet = new Bullet(this.myScene,this.x,this.y,angle,{anm:'fireball','initSpeed':this.arrowSpd,scale:.75});
+        let bullet = new Bullet(this.myScene,this.x+xoff,this.y+8,angle,{anm:'fireball','initSpeed':this.arrowSpd,scale:.75,bdyW:16,bdyH:8});
 
     }
 
