@@ -7,6 +7,7 @@ class GameScene extends Phaser.Scene {
         this.chunkW = 10;
         this.chunkH = 20;
         this.playState = PLAYSTATE_MAIN;//main or boss
+        this.playStateReturn = PLAYSTATE_MAIN;//main or boss
 
     }
     
@@ -51,6 +52,10 @@ class GameScene extends Phaser.Scene {
         this.cameras.main.setBackgroundColor(0x85f2ff);
         this.addAnimations();
 
+
+        this.bosses = [1,2,3,4,5,6];
+        this.bosses.sort(() => (Math.random() > .5) ? 1 : -1);
+        this.bossIndex = 0;
 
         //If world is bigger than the window
         this.worldWidth = this.physics.world.bounds.width;
@@ -135,7 +140,8 @@ class GameScene extends Phaser.Scene {
         this.corpses = this.add.group();
         this.gates = this.add.group();
         this.kids = this.add.group();
-        this.justMobs = this.physics.add.group();// don't interact with player
+        this.justMobs = this.add.group();// don't interact with player
+        this.puppies = this.physics.add.staticGroup();
 
         // colliders
         this.physics.add.collider(this.player, this.platforms, this.collidePlatform,false,this);
@@ -143,8 +149,10 @@ class GameScene extends Phaser.Scene {
         this.physics.add.overlap(this.player, this.portals, this.hitPortal,false,this);
         this.physics.add.overlap(this.player, this.bossDoors, this.hitBossDoor,false,this);
         this.physics.add.overlap(this.player, this.kids, this.hitKid,false,this);
+        this.physics.add.collider(this.player, this.puppies, this.hitPuppy,false,this);
         this.physics.add.collider(this.kids, this.platforms);
         this.physics.add.collider(this.justMobs, this.platforms);
+        this.physics.add.collider(this.puppies, this.platforms);
         this.physics.add.collider(this.enemies, this.platforms);
         this.physics.add.collider(this.enemies, this.gates);
         this.physics.add.collider(this.splatbullets, this.platforms, this.bulletHitPlatform,false,this);
@@ -281,12 +289,19 @@ class GameScene extends Phaser.Scene {
 //           new Enemy(this, this.player.x+128,this.player.y-128,1,{img:'walkingDude',anmDefault:'walkingDude',canKillMe:false,damageOnImpact:false});
 //         this.finish.add(F);
 
+
  		   //new HatLoot(this,this.player.x+128,this.player.y-64,{'hatKey':'blobCrown','img':'blobCrown'});
 
     }
 
     dropHatLoot(key,x,y){
         new HatLoot(this,x,y,{'img':key});
+    }
+
+    makePuppy(x,y){
+        let puppy =this.add.sprite(x,y,'roboPuppy');
+        puppy.play('roboPuppy1');
+        this.puppies.add(puppy);
     }
 
     spawnHat(){
@@ -533,6 +548,12 @@ class GameScene extends Phaser.Scene {
 
                             this.makeIceBlob( this.chunkX+(i*UNITSIZE) + HALFUNIT,j*UNITSIZE - HALFUNIT);
 
+                        }else{
+
+                                if(!this.madeMiniBossDoor && Phaser.Math.Between(1,100)===100 && j!=firstFloorLvl && ckGrid[i][Math.max(j-1,0)] === VOID){
+                                    this.madeMiniBossDoor = true;
+                                    new BossDoor(this,this.chunkX + (i * UNITSIZE), j * UNITSIZE - (UNITSIZE*2) );
+                                }
                         }
 
                         if(Phaser.Math.Between(1,20)===1 && ckGrid[i][Math.max(j-1,0)] === VOID){
@@ -565,12 +586,9 @@ class GameScene extends Phaser.Scene {
                             let grs = this.add.sprite( this.chunkX + (i * UNITSIZE), j * UNITSIZE-UNITSIZE+1,'grass');
                             grs.setOrigin(0,0);
                             grs.depth = 9;
-                            if(!this.madeMiniBossDoor){
-                                this.madeMiniBossDoor = true;
-                                new BossDoor(this,this.chunkX + (i * UNITSIZE), j * UNITSIZE - (UNITSIZE*2) );
-                            }
+
                             // chance for tree
-                            let treeroll = 5;
+                            let treeroll = 6;
                             if( Phaser.Math.Between(1,treeroll) == treeroll){
                                 let decRoll = Phaser.Math.Between(1,4);
                                 let spr1 = null;
@@ -599,6 +617,12 @@ class GameScene extends Phaser.Scene {
                                         spr1.setOrigin(0,0);
                                         spr1.depth = 10;
                                         break;
+                                   case 5:
+                                        if(Phaser.Math.Between(1,20)===20){
+                                            this.makePuppy(this.chunkX + (i * UNITSIZE), j * UNITSIZE - 14);
+                                        }
+                                        break;
+
                                     }
 
 
@@ -696,8 +720,9 @@ class GameScene extends Phaser.Scene {
 
     makeBossLvl1(){
         this.playState=PLAYSTATE_BOSS;
+        this.playStateReturn=PLAYSTATE_BOSS;
 
-        let roomX = this.chunkX + 32000;//left
+        let roomX = this.chunkX - 32000;//left
         let roomY = 0;//top
         let bossGridW = W/UNITSIZE;
         let bossGridH = H/UNITSIZE;
@@ -750,6 +775,7 @@ class GameScene extends Phaser.Scene {
 
     makeMiniBossLvl1(door){
         this.playState=PLAYSTATE_MINIBOSS;
+        this.playStateReturn=PLAYSTATE_MINIBOSS;
         let roomX = this.chunkX + 12000;
         let roomY = UNITSIZE;
         let returnTo = door;
@@ -856,12 +882,10 @@ class GameScene extends Phaser.Scene {
             that.events.emit('bossGone');
             new Portal(that,roomX+(9*UNITSIZE),roomY+(11*UNITSIZE)-UNITSIZE,{'img':'minidoorOpen','onExit':function(){ that.returnToMainState(); returnTo.play('miniDoorBurn');}}).setTwin(returnTo);
         }
-        //let miniBoss = new EvilEyeball(this,roomX + UNITSIZE + 32, roomY + UNITSIZE + (32),1,{'scale':3,'hp':10,'defaultAcc':50,'maxVelocity':100,'onDestroy':myOnDestroy});
-//        let miniBoss = new BossEvilEyeball(this,roomX + UNITSIZE + 32, roomY + UNITSIZE + (32),1,{'defaultAcc':100,'maxVelocity':200,'onDestroy':myOnDestroy});
-//        let miniBoss = new BossBlobKing(this,roomX + UNITSIZE + 32, roomY + UNITSIZE + (32),1,{'defaultAcc':50,'maxVelocity':100,'onDestroy':myOnDestroy});
 
-        let rnd = Phaser.Math.Between(1,6);
-//        let rnd = 6;
+
+        // this array has been shuffled
+        let rnd = this.bosses[this.bossIndex];
         let roomMid = roomX + UNITSIZE*5+(UNITSIZE/2);
         let B = undefined;
         if(rnd==1){
@@ -873,7 +897,7 @@ class GameScene extends Phaser.Scene {
         }else if(rnd==4){
             B = new BossToxic(this,roomMid, roomY + UNITSIZE + (32),1,{'defaultAcc':50,'maxVelocity':100,'onDestroy':myOnDestroy});
         }else if(rnd==5){
-            B = new BossToxic(this,roomMid, roomY + UNITSIZE + (32),1,{'defaultAcc':50,'maxVelocity':100,'onDestroy':myOnDestroy});
+            B = new BossDragon(this,roomMid, roomY + UNITSIZE + (32),1,{'defaultAcc':50,'maxVelocity':100,'onDestroy':myOnDestroy});
         }else{
             B = new BuffAmongus(this,roomMid, roomY + UNITSIZE + (32),1,{'defaultAcc':100,'maxVelocity':100,'onDestroy':myOnDestroy,img:'buffAmg'});
         }
@@ -881,6 +905,10 @@ class GameScene extends Phaser.Scene {
         this.player.x = this.resetX;
         this.player.y = this.resetY;
         B.x = this.player.x;
+        this.bossIndex++;
+        if(this.bossIndex>=this.bosses.length){
+            this.bossIndex=0;
+        }
     }
 
     gotHat(hatKey){
@@ -894,6 +922,7 @@ class GameScene extends Phaser.Scene {
 
     returnToMainState(){
         this.playState=PLAYSTATE_MAIN;
+        this.playStateReturn=PLAYSTATE_MAIN;
         this.cameras.main.setBackgroundColor(0x85f2ff);
     }
 
@@ -1105,6 +1134,14 @@ class GameScene extends Phaser.Scene {
         }
     }
 
+    hitPuppy(player,puppy){
+        if(puppy.anims.currentAnim.key=='roboPuppy1'){
+                puppy.play('roboPuppy2');
+                this.soundDropFall.play();
+        }
+
+    }
+
 	hitBossDoor(player,door){
 
 
@@ -1135,11 +1172,16 @@ class GameScene extends Phaser.Scene {
     }
 
     bulletHitPlatform(bullet,platform){
+        if(bullet.destroyOnSplat){
         bullet.destroy();
+        }
     }
     
     bulletHitShield(bullet,shield){
-        bullet.destroy();
+        if(bullet.destroyOnSplat){
+            bullet.destroy();
+        }
+
     }
 
     playerLoseLife(){
@@ -1291,12 +1333,10 @@ class GameScene extends Phaser.Scene {
     update(time,delta)
     {
 
-
-
         if(this.playState==PLAYSTATE_DEATH){
 
                 if(this.player.anims.currentFrame && this.player.anims.currentFrame.index === this.player.anims.getTotalFrames()  ){
-                    this.playState=PLAYSTATE_MAIN;
+                    this.playState=this.playStateReturn;
                     this.reset = true;
                 }else{
                     return false;
@@ -1477,13 +1517,24 @@ class GameScene extends Phaser.Scene {
                 e.destroy();
             }
         });
-
+        this.splatbullets.children.each((e)=>{
+            e.update();
+            if(e.x<playerX - W/2 || e.x>this.player.x + W/2 || e.y>H*10){
+                e.destroy();
+            }
+        });
+        this.justMobs.children.each((e)=>{
+            e.update();
+            if(e.x<playerX - W/2 || e.x>this.player.x + W/2 || e.y>H*10){
+                e.destroy();
+            }
+        });
         if(this.playState===PLAYSTATE_MAIN){
-                this.cleanup.children.each((e)=>{
-                    if(e.x< playerX - (W*2)){
-                        e.destroy();
-                    }
-                });
+//                this.cleanup.children.each((e)=>{
+//                    if(e.x< playerX - (W*2)){
+//                        e.destroy();
+//                    }
+//                });
         }
 
 
@@ -1534,6 +1585,7 @@ class GameScene extends Phaser.Scene {
         // Keep your key too.
         //playerHasKey=false;
         this.playState = PLAYSTATE_MAIN;
+        this.playStateReturn = PLAYSTATE_MAIN;
         this.GAMEOVER=false;
         this.restart=true;
 

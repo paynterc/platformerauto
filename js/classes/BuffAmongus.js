@@ -49,6 +49,10 @@ class BuffAmongus extends MiniBoss {
         this.myScene.cameras.main.stopFollow();
         this.myScene.cameras.main.startFollow(this);
         this.introTimer = 200;
+        this.curAttack=0;
+        this.numAttacks=8;
+        this.attackCounter=0;
+        this.oneBullet=false;
     }
 
     startMovement(){
@@ -92,18 +96,61 @@ class BuffAmongus extends MiniBoss {
             }
             return false;
         }
-        this.preAttackTimer = this.preAttackTime;
         this.setTint("0xffffff");
         // flashing is over, do the attack
-//        let angle = this.flipX ? 180 : 0;
-//        new Bullet(this.myScene,this.x,this.y,0,{anm:'fireball','initSpeed':100});
-//        new Bullet(this.myScene,this.x,this.y,90,{anm:'fireball','initSpeed':100});//down
-//        new Bullet(this.myScene,this.x,this.y,180,{anm:'fireball','initSpeed':100});
-        new Bullet(this.myScene,this.x,this.y,270,{anm:'fireball','initSpeed':100});
-        this.walk();
+
+        //new Bullet(this.myScene,this.x,this.y,270,{anm:'fireball','initSpeed':100});
+        //this.walk();
+        if(this.attackCounter>=this.numAttacks){
+            this.attackCounter=0;
+            this.curAttack=0;
+            this.walk();
+            this.preAttackTimer = this.preAttackTime;
+
+            return false;
+        }
+
+        if(this.curAttack==0){
+            this.attackCounter=0;
+            this.curAttack=1;
+            this.play('buffAmgAttack1');
+        }else if(this.curAttack==1){
+            // overhead attack
+            if(this.anims.currentFrame.index==6){
+                if(!this.oneBullet){
+                    this.oneBullet=true;
+                    this.boomAttack(this.x,this.y-64);
+                }
+
+            }else if(this.anims.currentFrame.index==7){
+                this.oneBullet=false;
+                this.attackCounter++;
+                this.curAttack=2;
+                this.play('buffAmgPunch');
+            }
+        }else if(this.curAttack==2){
+            // punch
+            if(this.anims.currentFrame.index==3){
+                if(!this.oneBullet){
+                    this.oneBullet=true;
+                    let xoff = this.flipX ? -32 : 32;
+                    this.boomAttack(this.x+xoff,this.y);
+                }
+            }else if(this.anims.currentFrame.index==4){
+                this.oneBullet=false;
+                this.attackCounter++;
+                this.curAttack=1;
+                this.play('buffAmgAttack1');
+            }
+        }
+
     }
 
-
+    boomAttack(x,y){
+        let bullet = new Bullet(this.myScene,x,y,0,{'anm':'kapow','initSpeed':0,'destroyAfterAnim':true,'img':'kapow'});
+        bullet.setDepth(-100);
+        this.myScene.soundFireExplode.play();
+    }
 
     onCorpseDestroy = function(){
 

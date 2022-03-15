@@ -45,6 +45,8 @@ class BootScene extends Phaser.Scene{
         this.load.image('grass', 'img/grass.png');
         this.load.image('tree2', 'img/tree3.png');
         this.load.image('blobCrown', 'img/blobCrown.png');
+        this.load.image('bombGoblin', 'img/bombGoblin.png');
+        this.load.image('avocadoHat', 'img/hats/angryAvocadoHat.png');
 
 
         this.load.spritesheet('fireball', 'img/fireball.png',{ frameWidth: 32, frameHeight: 32 });
@@ -104,6 +106,7 @@ class BootScene extends Phaser.Scene{
         this.load.spritesheet('avocadoWalk', 'img/avocadoWalk.png',{ frameWidth: 100, frameHeight: 100 });
         this.load.spritesheet('forestDragon', 'img/forest_dragon .png',{ frameWidth: 96, frameHeight: 60 });
         this.load.spritesheet('buffAmg', 'img/buffAmongus.png',{ frameWidth: 125, frameHeight: 82 });
+        this.load.spritesheet('roboPuppy', 'img/roboPuppy.png',{ frameWidth: 32, frameHeight: 28 });
 
         
 
@@ -167,6 +170,7 @@ class BootScene extends Phaser.Scene{
  			{img:'blobCrown',price:0,hasHat:false,hatClass:"Hat",descrip:"Protection from blobs"},
             {img:'cakeHat',price:25,hasHat:false,hatClass:"Hat",descrip:"Extra Life.",anm:"cakeHat"},
  			{img:'hornHelmet',price:25,hasHat:false,hatClass:"HatHornHelmet",descrip:"Blocks arrows."},
+ 			{img:'avocadoHat',price:25,hasHat:false,hatClass:"Hat",descrip:"???"},
         ];
         curHat = null;
 
@@ -179,7 +183,18 @@ class BootScene extends Phaser.Scene{
         curHero = heroes[0];
 
         animConfigs = {};
-
+        animConfigs.roboPuppy1 = {
+            key: 'roboPuppy1',
+            frames: this.anims.generateFrameNumbers('roboPuppy', { start: 0, end: 0, first: 0 }),
+            frameRate: 4,
+            repeat: 0
+        };
+        animConfigs.roboPuppy2 = {
+            key: 'roboPuppy2',
+            frames: this.anims.generateFrameNumbers('roboPuppy', { start: 1, end: 1, first: 1 }),
+            frameRate: 4,
+            repeat: 0
+        };
         animConfigs.buffAmgIntro = {
             key: 'buffAmgIntro',
             frames: this.anims.generateFrameNumbers('buffAmg', { start: 0, end: 4, first: 0 }),
@@ -194,14 +209,29 @@ class BootScene extends Phaser.Scene{
         };
         animConfigs.buffAmgAttack1 = {
             key: 'buffAmgAttack1',
-            frames: this.anims.generateFrameNumbers('buffAmg', { start: 0, end: 4, first: 0 }),
-            frameRate: 32,
+            frames: [
+                {key:'buffAmg',frame:0,duration:1},
+                {key:'buffAmg',frame:1,duration:1},
+                {key:'buffAmg',frame:2,duration:1},
+                {key:'buffAmg',frame:3,duration:1},
+                {key:'buffAmg',frame:4,duration:1},
+                {key:'buffAmg',frame:5,duration:1},
+                {key:'buffAmg',frame:5,duration:1},
+            ],
+            frameRate: 4,
             repeat: 0
         };
+
+
         animConfigs.buffAmgPunch = {
             key: 'buffAmgPunch',
-            frames: this.anims.generateFrameNumbers('buffAmg', { start: 9, end: 10, first: 9 }),
-            frameRate: 32,
+            frames: [
+                {key:'buffAmg',frame:9,duration:1},
+                {key:'buffAmg',frame:10,duration:1},
+                {key:'buffAmg',frame:10,duration:1},
+                {key:'buffAmg',frame:10,duration:1},
+            ],
+            frameRate: 4,
             repeat: 0
         };
         animConfigs.buffAmgDie = {

@@ -12,6 +12,12 @@ class GoblinBomber extends Enemy {
         this.myAttackFrequency = 80;
         this.myAttackTimer = this.myAttackFrequency;
 
+        this.numShots=5;
+        this.shotCount=0;
+        this.myDelay = 10;//time between shots
+        this.nextShoot = this.myDelay;
+        this.attacking = false;
+
         this.anmDefault = 'goblinBomberIdle';
         this.anmIdle = 'goblinBomberIdle';
         this.anmWalk = 'goblinBomberIdle';
@@ -26,11 +32,40 @@ class GoblinBomber extends Enemy {
     }
 
     myPreUpdate(time,delta){
-        this.myAttackTimer--;
-        if(this.myAttackTimer<1){
-            this.myAttackTimer = this.myAttackFrequency;
-            this.attack();
+
+        if(this.attacking){
+            this.nextShoot--;
+            if(this.nextShoot<=0){
+                this.nextShoot=this.myDelay;
+                this.shoot();
+                this.shotCount++;
+                if(this.shotCount>=this.numShots){
+                    this.stopAttack();
+                }
+            }
+        }else{
+            this.myAttackTimer--;
+            if(this.myAttackTimer<1){
+                this.myAttackTimer = this.myAttackFrequency;
+                if( Phaser.Math.Distance.Between(this.x, this.y, this.myScene.player.x, this.myScene.player.y) < 128 ){
+                    this.attack();
+                }
+            }
         }
+
+
+    }
+
+    attack(){
+        this.nextShoot=0;
+        this.shotCount=0;
+        this.attacking=true;
+    }
+
+    stopAttack(){
+        this.nextShoot=this.myDelay;
+        this.shotCount=0;
+        this.attacking=false;
     }
 
     mySetScale(){
@@ -38,11 +73,16 @@ class GoblinBomber extends Enemy {
             this.myScale = 1;
     }
 
-    attack(){
-        if( Phaser.Math.Distance.Between(this.x, this.y, this.myScene.player.x, this.myScene.player.y) < 128 ){
-            this.play(this.anmAttack);
-            this.die();
-        }
+//    attack(){
+//        if( Phaser.Math.Distance.Between(this.x, this.y, this.myScene.player.x, this.myScene.player.y) < 128 ){
+//            this.play(this.anmAttack);
+//            this.die();
+//        }
+//    }
+
+    shoot(){
+        let angle = Phaser.Math.Between(250,290);
+        let arrow = new Bomb(this.myScene,this.x,this.y,angle,{'img':'bombGoblin','initSpeed':600,myGroup:this.myScene.justMobs});
     }
 
     die(){

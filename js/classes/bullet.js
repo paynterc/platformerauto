@@ -24,6 +24,7 @@ class Bullet extends Phaser.Physics.Arcade.Sprite {
         this.destroyAfterAnim = config.hasOwnProperty('destroyAfterAnim') ? config.destroyAfterAnim : false;
         this.destroyOnHit = config.hasOwnProperty('destroyOnHit') ? config.destroyOnHit : true;
         this.lifeSpan = config.hasOwnProperty('lifeSpan') ? config.lifeSpan : 600;
+        this.destroyOnSplat = config.hasOwnProperty('destroyOnSplat') ? config.destroyOnSplat : true;
         let myGroup = config.hasOwnProperty('myGroup') ? config.myGroup : scene.bullets;
 
 
@@ -49,6 +50,10 @@ class Bullet extends Phaser.Physics.Arcade.Sprite {
 
     }
 
+    onDestroy(){
+
+    }
+
     update(time,delta){
 			
 
@@ -59,6 +64,7 @@ class Bullet extends Phaser.Physics.Arcade.Sprite {
             }else{
 				this.lifeSpan--;
 				if(this.lifeSpan<1){
+				    this.onDestroy();
 					this.destroy();
 				}
             }

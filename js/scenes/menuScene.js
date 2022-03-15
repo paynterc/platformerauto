@@ -12,7 +12,7 @@ class MenuScene extends Phaser.Scene{
     create ()
     {
         let that = this;
-        this.titleText = this.add.text(centerX, centerY, "A GAME", { fontSize: '64px', fontFamily: 'FourBitRegular' }).setOrigin(0.5).setTint('0x00ff00');
+        this.titleText = this.add.text(centerX, centerY, "Any Hero's Journey", { fontSize: '48px', fontFamily: 'FourBitRegular' }).setOrigin(0.5).setTint('0x00ff00');
 
         this.startText = this.add.text(centerX, centerY+64, "START", { fontSize: '32px', fontFamily: 'FourBitRegular' }).setOrigin(0.5);
         this.startText.setInteractive().on('pointerdown', function(pointer, localX, localY, event){
@@ -57,7 +57,7 @@ class MenuScene extends Phaser.Scene{
         })
 
 
-        this.nextHero = this.add.text(centerX, H/4+64+32, "next hero", { fontSize: '16px', fontFamily: 'FourBitRegular' }).setOrigin(0.5);
+        this.nextHero = this.add.text(centerX,32, "next hero", { fontSize: '16px', fontFamily: 'FourBitRegular' }).setOrigin(0.5);
         this.nextHero.setInteractive().on('pointerdown', function(pointer, localX, localY, event){
 
             that.H++;

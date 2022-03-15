@@ -144,6 +144,10 @@ class BossDragon extends Enemy {
                         let angle = this.flipX ? 180 : 0;
                         let xoff = this.flipX ? -48 : 48;
                         new Bullet(this.myScene,this.x+xoff,this.y-8,angle,{anm:'fireball','initSpeed':100});
+
+                        let sploder = new Bullet(this.myScene,this.x,this.y,0,{'anm':'kapow','initSpeed':0,'destroyAfterAnim':true,'img':'kapow'});
+                        sploder.setDepth(-100);
+
                     }else{
                         this.nextShoot--;
                     }
