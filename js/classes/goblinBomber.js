@@ -82,7 +82,7 @@ class GoblinBomber extends Enemy {
 
     shoot(){
         let angle = Phaser.Math.Between(250,290);
-        let arrow = new Bomb(this.myScene,this.x,this.y,angle,{'img':'bombGoblin','initSpeed':600,myGroup:this.myScene.justMobs});
+        let arrow = new Boomer(this.myScene,this.x,this.y,angle,{'img':'bombGoblin','initSpeed':600,myGroup:this.myScene.justMobs});
     }
 
     die(){
