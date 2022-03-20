@@ -161,7 +161,7 @@ class BossDragon extends Enemy {
 
     onCorpseDestroy = function(){
                 this.myScene.dropHatLoot('cakeHat',this.x,this.y);
-
+                this.myScene.gotHat('cakeHat');
 //                    new HatLoot(this,this.x,this.y,{'hatKey':'topHat','img':'topHat'});
 //                curHat = 'topHat';
 //                this.myScene.gotHat(curHat);

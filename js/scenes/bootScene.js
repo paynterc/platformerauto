@@ -18,20 +18,10 @@ class BootScene extends Phaser.Scene{
         this.load.image('blueSquare', 'img/blueSquare.png');
         this.load.image('audio', 'img/ui/Audio34x.png');
         this.load.image('equalizer', 'img/ui/Equalizer34x.png');
-        this.load.image('egg', 'img/egg.png');
-        this.load.image('bigpurple', 'img/bigpurple.png');
-        this.load.image('arrow', 'img/Parker_arrow_15x9_2.png');
-        this.load.image('willowPortal', 'img/WillowPortal2.png');
-        this.load.image('MushroomBullet', 'img/Mushroom2Bullet.png');
         this.load.image('blocker', 'img/blockerX8.png');
         this.load.image('arrowKey', 'img/arrowRight.png');
-        this.load.image('kahLessFire', 'img/KahLessFire.png');
-        this.load.image('kahLessFall', 'img/KahLessFall.png');
-        this.load.image('topHat', 'img/hats/topHat.png');
-        this.load.image('gnomeHat', 'img/hats/GnomeHat.png');
         this.load.image('vikingHat', 'img/hats/VikingHelmet.png');
-        this.load.image('hornHelmet', 'img/hats/horn knight helmet32x.png');
-        this.load.image('headband', 'img/hats/headband.png');
+        this.load.image('hornHelmet', 'img/hats/VikingHelmet.png');
         this.load.image('tree1', 'img/tree1.png');
         this.load.image('door', 'img/door.png');
         this.load.image('minidoor', 'img/minidoor.png');
@@ -47,46 +37,28 @@ class BootScene extends Phaser.Scene{
         this.load.image('blobCrown', 'img/blobCrown.png');
         this.load.image('bombGoblin', 'img/bombGoblin.png');
         this.load.image('avocadoHat', 'img/hats/angryAvocadoHat.png');
+        this.load.image('iceBlast', 'img/iceBlast.png');
 
 
         this.load.spritesheet('fireball', 'img/fireball.png',{ frameWidth: 32, frameHeight: 32 });
-        this.load.spritesheet('greenDotIdle', 'img/GreenDotIdle.png',{ frameWidth: 32, frameHeight: 32 });
-        this.load.spritesheet('greenDotRun', 'img/GreenDotRun.png',{ frameWidth: 32, frameHeight: 32 });
+
         this.load.spritesheet('emyIdle', 'img/emyIdle.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('emyHit', 'img/emyHit.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('emyWalk', 'img/emyWalk.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('emyDie', 'img/emyDie.png',{ frameWidth: 32, frameHeight: 32 });
-        this.load.spritesheet('gusguy', 'img/Gus.png',{ frameWidth: 32, frameHeight: 32 });
-        this.load.spritesheet('crown', 'img/crown.png',{ frameWidth: 128, frameHeight: 128 });
-        this.load.spritesheet('hellSpawnMove', 'img/Gabe_hell_spawn.png',{ frameWidth: 32, frameHeight: 32 });
-        this.load.spritesheet('hellSpawnDie', 'img/Gabe_hell_spawnDeath.png',{ frameWidth: 32, frameHeight: 32 });
-        this.load.spritesheet('oliverBlue', 'img/Oliverblue2.png',{ frameWidth: 32, frameHeight: 32 });
-        this.load.spritesheet('ottoGhost', 'img/OttoGhost2.png',{ frameWidth: 32, frameHeight: 32 });
-        this.load.spritesheet('parkerArcher', 'img/Parker_archerKnight32.png',{ frameWidth: 36, frameHeight: 36 });
         this.load.spritesheet('mountains1', 'img/mountains1.png',{ frameWidth: 128, frameHeight: 128 });
         this.load.spritesheet('mountains2', 'img/mountains2.png',{ frameWidth: 128, frameHeight: 128 });
-        this.load.spritesheet('kahlessRainbow', 'img/Kahless_Rainbow64_12fps.png',{ frameWidth: 64, frameHeight: 64 });
         this.load.spritesheet('ozzieYouDied', 'img/Ozzie_YouDied.png',{ frameWidth: 32, frameHeight: 32 });
-        this.load.spritesheet('calliopeMushroom', 'img/Mushroom2-40.png',{ frameWidth: 40, frameHeight: 40 });
-        this.load.spritesheet('rockHammerGuy', 'img/Rock_Hammer_92x.png',{ frameWidth: 92, frameHeight: 92 });
-        this.load.spritesheet('rockFire', 'img/Rock_Fire_50x108.png',{ frameWidth: 50, frameHeight: 108 });
-        this.load.spritesheet('slimeBlob', 'img/Calliope_SlimeBlob.png',{ frameWidth: 32, frameHeight: 32 });
-        this.load.spritesheet('kahLessSquare', 'img/KahLessSquare.png',{ frameWidth: 28, frameHeight: 28 });
-        this.load.spritesheet('watcherIdle', 'img/WatcherIdle.png',{ frameWidth: 64, frameHeight: 64 });
         this.load.spritesheet('emyYellowFly', 'img/emyYellowFly.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('emyYellowDie', 'img/emyYellowDie.png',{ frameWidth: 32, frameHeight: 32 });
-        this.load.spritesheet('commander', 'img/commander2_256.png',{ frameWidth: 256, frameHeight: 256 });
         this.load.spritesheet('coin', 'img/coin.png',{ frameWidth: 16, frameHeight: 16 });
-        this.load.spritesheet('alienHat', 'img/hats/alienHat.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('cakeHat', 'img/hats/cake.png',{ frameWidth: 32, frameHeight: 32 });
-        this.load.spritesheet('yigaHat', 'img/hats/bigYiga128.png',{ frameWidth: 128, frameHeight: 128 });
         this.load.spritesheet('evilEyeball', 'img/evil_eyeball.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('evilEyeballDie', 'img/evil_eyeball_die.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('bobTheBlob', 'img/bob_the_blob.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('bonyBoomBox', 'img/bony_the_boom_box.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('blueyWalk', 'img/Bluey.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('blueyDie', 'img/Bluey_DEATH.png',{ frameWidth: 32, frameHeight: 32 });
-        this.load.spritesheet('gusGrave', 'img/gus_the_grave.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('bobbyBomb', 'img/bobby_the_bomb.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('goblin', 'img/Goblin.png',{ frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('greenie', 'img/Greenie.png',{ frameWidth: 32, frameHeight: 32 });
@@ -107,6 +79,7 @@ class BootScene extends Phaser.Scene{
         this.load.spritesheet('forestDragon', 'img/forest_dragon .png',{ frameWidth: 96, frameHeight: 60 });
         this.load.spritesheet('buffAmg', 'img/buffAmongus.png',{ frameWidth: 125, frameHeight: 82 });
         this.load.spritesheet('roboPuppy', 'img/roboPuppy.png',{ frameWidth: 32, frameHeight: 28 });
+        this.load.spritesheet('avocadoProject', 'img/avocadoProjectile.png',{ frameWidth: 60, frameHeight: 60 });
 
         
 
@@ -167,9 +140,9 @@ class BootScene extends Phaser.Scene{
         ];
 
         hats = [
- 			{img:'blobCrown',price:0,hasHat:false,hatClass:"Hat",descrip:"Protection from blobs"},
-            {img:'cakeHat',price:25,hasHat:false,hatClass:"Hat",descrip:"Extra Life.",anm:"cakeHat"},
- 			{img:'hornHelmet',price:25,hasHat:false,hatClass:"HatHornHelmet",descrip:"Blocks arrows."},
+ 			{img:'blobCrown',price:0,hasHat:false,hatClass:"Hat",descrip:"Ice blob power"},
+            {img:'cakeHat',price:25,hasHat:false,hatClass:"Hat",descrip:"Every saved kid gives extra life",anm:"cakeHat"},
+ 			{img:'hornHelmet',price:25,hasHat:false,hatClass:"HatHornHelmet",descrip:"Blocks bullets"},
  			{img:'avocadoHat',price:25,hasHat:false,hatClass:"Hat",descrip:"???"},
         ];
         curHat = null;
@@ -183,6 +156,12 @@ class BootScene extends Phaser.Scene{
         curHero = heroes[0];
 
         animConfigs = {};
+        animConfigs.avocadoProjectile = {
+            key: 'avocadoProjectile',
+            frames: this.anims.generateFrameNumbers('avocadoProject', { start: 0, end: 2, first: 0 }),
+            frameRate: 6,
+            repeat: -1
+        };
         animConfigs.roboPuppy1 = {
             key: 'roboPuppy1',
             frames: this.anims.generateFrameNumbers('roboPuppy', { start: 0, end: 0, first: 0 }),

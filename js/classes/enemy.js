@@ -78,7 +78,6 @@ class Enemy extends Phaser.GameObjects.Sprite {
         if(this.anmIdle) this.play(this.anmIdle);
         scene.enemies.add(this);
         this.body.pushable = false;
-
         this.init();
     }
 
@@ -92,6 +91,8 @@ class Enemy extends Phaser.GameObjects.Sprite {
     }
 
     update(time,delta){
+
+
         this.myPreUpdate(time,delta);
         if(this.killAfterTime>0 && this.myState!=STATE_EN_DIE){
             this.killAfterTime -=1;
@@ -216,7 +217,7 @@ class Enemy extends Phaser.GameObjects.Sprite {
     // I was hit
     hit(player){
         this.myPreHit(player);
-        if(player.y <= this.y-UNITSIZE){
+        if(player.y <= this.y- ((this.height*this.myScale)/2)){
             if(!this.canKillMe){
                 return false;
             }
@@ -237,6 +238,17 @@ class Enemy extends Phaser.GameObjects.Sprite {
         }else if(player.y >= this.y-UNITSIZE/4 && this.damageOnImpact){
             this.myScene.playerLoseLife();
         }
+    }
+
+    hitBullet(bullet){
+                this.hp-=10;
+                if(this.hp<1){
+                    this.kill();
+                    this.myScene.soundDropFall.play();
+
+                    this.myScene.emitter3.emitParticleAt(this.x, this.y, 10);
+
+                }
     }
 
     myPreHit(player){

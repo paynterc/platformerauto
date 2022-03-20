@@ -9,7 +9,7 @@ class GoblinBomber extends Enemy {
 //        this.defaultVelocityY = 45;
 //        this.body.velocity.y = this.defaultVelocityY ;
         this.damageOnImpact = false;// no damage when you touch
-        this.myAttackFrequency = 80;
+        this.myAttackFrequency = 160;
         this.myAttackTimer = this.myAttackFrequency;
 
         this.numShots=5;
@@ -32,26 +32,28 @@ class GoblinBomber extends Enemy {
     }
 
     myPreUpdate(time,delta){
-
-        if(this.attacking){
-            this.nextShoot--;
-            if(this.nextShoot<=0){
-                this.nextShoot=this.myDelay;
-                this.shoot();
-                this.shotCount++;
-                if(this.shotCount>=this.numShots){
-                    this.stopAttack();
+        if(this.state!=STATE_EN_DIE){
+                if(this.attacking){
+                    this.nextShoot--;
+                    if(this.nextShoot<=0){
+                        this.nextShoot=this.myDelay;
+                        this.shoot();
+                        this.shotCount++;
+                        if(this.shotCount>=this.numShots){
+                            this.stopAttack();
+                        }
+                    }
+                }else{
+                    this.myAttackTimer--;
+                    if(this.myAttackTimer<1){
+                        this.myAttackTimer = this.myAttackFrequency;
+                        if( Phaser.Math.Distance.Between(this.x, this.y, this.myScene.player.x, this.myScene.player.y) < 128 ){
+                            this.attack();
+                        }
+                    }
                 }
-            }
-        }else{
-            this.myAttackTimer--;
-            if(this.myAttackTimer<1){
-                this.myAttackTimer = this.myAttackFrequency;
-                if( Phaser.Math.Distance.Between(this.x, this.y, this.myScene.player.x, this.myScene.player.y) < 128 ){
-                    this.attack();
-                }
-            }
         }
+
 
 
     }
@@ -68,10 +70,7 @@ class GoblinBomber extends Enemy {
         this.attacking=false;
     }
 
-    mySetScale(){
-            this.setScale(1);
-            this.myScale = 1;
-    }
+
 
 //    attack(){
 //        if( Phaser.Math.Distance.Between(this.x, this.y, this.myScene.player.x, this.myScene.player.y) < 128 ){

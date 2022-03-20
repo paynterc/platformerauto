@@ -52,7 +52,6 @@ class GameScene extends Phaser.Scene {
         this.cameras.main.setBackgroundColor(0x85f2ff);
         this.addAnimations();
 
-
         this.bosses = [1,2,3,4,5,6];
         this.bosses.sort(() => (Math.random() > .5) ? 1 : -1);
         this.bossIndex = 0;
@@ -163,6 +162,7 @@ class GameScene extends Phaser.Scene {
         this.physics.add.collider(this.loot, this.platforms);
         this.physics.add.collider(this.player, this.enemies, this.hitEnemy,false,this);
         this.physics.add.overlap(this.player, this.bullets, this.hitBullet,false,this);
+        this.physics.add.overlap(this.enemies, this.bullets, this.hitBulletEnemy,false,this);
         this.physics.add.overlap(this.player, this.splatbullets, this.hitBullet,false,this);
         this.physics.add.collider(this.player, this.spikes, this.hitSpike,false,this);
         this.physics.add.collider(this.player, this.iceBlobs, this.hitIceBlob,false,this);
@@ -291,6 +291,15 @@ class GameScene extends Phaser.Scene {
 
 
  		   //new HatLoot(this,this.player.x+128,this.player.y-64,{'hatKey':'blobCrown','img':'blobCrown'});
+        this.gotHat('hornHelmet');
+    }
+
+    playerShoot(){
+//        let angle = this.flipX ? 225 : -45;
+        let angle = this.player.flipX ? 180 : 0;
+        let xoff = this.player.flipX ? -16 : 16;
+//        let arrow = new Arrow(this.myScene,this.x,this.y,angle,{'img':'arrow','initSpeed':this.arrowSpd});
+        let bullet = new Bullet(this,this.player.x+xoff,this.player.y,angle,{anm:'fireball',faction:0});
 
     }
 
@@ -912,11 +921,12 @@ class GameScene extends Phaser.Scene {
     }
 
     gotHat(hatKey){
-        let theHat
-        let hatConfig = hats.filter(obj => {
-          return obj.img == theHat;
-        });
-        hatConfig.hasHat=true;
+
+        for(var i=0;i<hats.length;i++){
+            if(hats[i].img==hatKey){
+                hats[i].hasHat=true;
+            }
+        }
 
     }
 
@@ -1184,20 +1194,34 @@ class GameScene extends Phaser.Scene {
 
     }
 
+    avacadoHatShoot(){
+        for(let i=0;i<360;i+=15){
+            let bullet = new Bullet(this,this.player.x,this.player.y-32,i,{img:'avocadoProject',anm:'avocadoProjectile',faction:0});
+        }
+    }
+
+
+
     playerLoseLife(){
         if(this.GAMEOVER) return false;
         if(this.restart) return false;
         if(this.playerDead) return false;
+		if(curHat=="avocadoHat"){
+		    if(this.player.y>H+512){
+		        this.reset = true;
+		        return false;
+		    }
+
+			this.hat.destroy();
+			curHat=null;
+            this.emitter3.emitParticleAt(this.x, this.y, 10);
+            this.avacadoHatShoot();
+            this.playerSafeTime=SAFETIME;
+            return false;
+		}
         this.playerDead = true;
+        lives--;
 
-		 lives--;
-
-//		if(curHat=="cakeHat"){
-//			this.hat.destroy();
-//			curHat=null;
-//		}else{
-//        	lives--;
-//		}
         this.events.emit('playerDied');
         this.soundPlayerDie.play();
         if(lives<0){
@@ -1257,17 +1281,38 @@ class GameScene extends Phaser.Scene {
     }
 
     hitBullet(player,bullet){
-
+        if(bullet.faction===0) return false;
         if(this.GAMEOVER) return false;
         this.shakeIt();
         if(bullet.destroyOnHit){
         	bullet.destroy();
+        }
+        if(curHat=='hornHelmet'){
+            this.hat.hp--;
+            if(this.hat.hp<1){
+                this.emitter3.emitParticleAt(this.hat.x, this.hat.y, 10);
+                this.hat.destroy();
+                curHat=null;
+            }
+            return false;
         }
         if(this.playerSafeTime>0){
     		return false;
     	}
         
         this.playerLoseLife();
+    }
+
+    hitBulletEnemy(enemy,bullet){
+        if(bullet.faction===1) return false;
+        if(this.GAMEOVER) return false;
+        this.shakeIt();
+        if(bullet.destroyOnHit){
+            bullet.destroy();
+        }
+
+
+        enemy.hitBullet();
     }
 
     hitSpike(player,spike){
@@ -1291,11 +1336,19 @@ class GameScene extends Phaser.Scene {
         this.emitter2.emitParticleAt(spike.x, spike.y, 20);
 
         if(this.playerSafeTime>0) return false;
-        if(curHat=='blobCrown') return false;
-        this.curAcceleration = ACCELERATION/4;
-        this.effectTimer = 200;
-        this.player.setTint("0x0048FF");
+        if(curHat=='blobCrown'){
+            this.iceBlobShoot(spike.x,spike.y);
+        }else{
+            this.curAcceleration = ACCELERATION/4;
+            this.effectTimer = 200;
+            this.player.setTint("0x0048FF");
+        }
 
+
+    }
+    iceBlobShoot(x,y){
+            new Bullet(this,x,y,0,{img:'iceBlast',faction:0,initSpeed:256});
+            new Bullet(this,x,y,180,{img:'iceBlast',faction:0,initSpeed:256});
     }
 
     shakeIt(){

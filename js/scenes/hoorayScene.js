@@ -67,8 +67,8 @@ class HoorayScene extends Phaser.Scene{
 
 		
 
-    	//this.showHats = [];
-		//this.refreshHats();
+    	this.showHats = [];
+		this.refreshHats();
 		this.showKey();
      
     	this.startText = this.add.text(centerX, H-32, "CONTINUE", { fontSize: '32px', fontFamily: 'FourBitRegular' });
@@ -144,16 +144,17 @@ class HoorayScene extends Phaser.Scene{
     refreshHats(){
 		for(var i=0;i<hats.length;i++){
 			// if hats[i] not in hasHats ...
-			this.showHats.push(hats[i]);
-// 			if(this.showHats.length===3) break;
+			if(hats[i].hasHat){
+			    this.showHats.push(hats[i]);
+			}
 		}
-    	let showHatX=W/2-384;
-		let showHatY=H-128;
+    	let showHatX=W/2- (this.showHats.length -1) * 64;
+		let showHatY=H-112;
 		let hatSpace = 64;
 		let that = this;
 		for(var i=0;i<this.showHats.length;i++){
 		
-			this.add.image(showHatX + (128*i),showHatY,'square').setScale(2.5).setTint('0xC4C4C4');
+			//this.add.image(showHatX + (128*i),showHatY,'square').setScale(2.5).setTint('0xC4C4C4');
 			let xoff = this.showHats[i].img == 'yigaHat' ? 28 : 0;
 			let yoff = this.showHats[i].img == 'yigaHat' ? 16 : 8;
 			let scl = this.showHats[i].img == 'yigaHat' ? 1.5 : 2;
@@ -165,7 +166,7 @@ class HoorayScene extends Phaser.Scene{
 			let idx = i;
 			let hatData = this.showHats[i];
 			hatSpr.setInteractive().on('pointerdown', function(pointer, localX, localY, event){
-				this.buyHat(idx);
+				this.wearHat(idx);
 			},this).on('pointerover',function(){
 				this.setScale(2.5);
 				that.hatDescripText.setText(hatData.descrip);
@@ -176,7 +177,18 @@ class HoorayScene extends Phaser.Scene{
 			
 		}
     }
-    
+
+
+    wearHat(i){
+        if(curHat==this.showHats[i].img){
+        			this.failSound.play();
+        			return false;
+        }
+        this.buySound.play();
+        curHat=this.showHats[i].img;
+        this.scene.restart();
+        return true;
+    }
 
 	buyHat(i){
 		if(this.showHats[i].hasHat){

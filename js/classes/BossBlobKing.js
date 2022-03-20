@@ -140,6 +140,7 @@ class BossBlobKing extends Enemy {
 //                this.myScene.spawnHat();
 //                new HatLoot(this,this.x,this.y,{'hatKey':'blobCrown','img':'blobCrown'});
                 this.myScene.dropHatLoot('blobCrown',this.x,this.y);
+                this.myScene.gotHat('blobCrown');
     }
 
 }

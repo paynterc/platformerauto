@@ -18,6 +18,7 @@ class Bullet extends Phaser.Physics.Arcade.Sprite {
 		}
 		let gravity = config.hasOwnProperty('gravity') ? config.gravity : GRAVITY;
 		this.body.setGravityY(GRAVITY);
+        this.faction = config.hasOwnProperty('faction') ? config.faction : 1;
         this.allowGrav = config.hasOwnProperty('allowGrav') ? config.allowGrav : false;
         this.initSpeed = config.hasOwnProperty('initSpeed') ? config.initSpeed : 128;
         this.accelerate = config.hasOwnProperty('accelerate') ? config.accelerate : false;

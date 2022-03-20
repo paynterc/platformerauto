@@ -3,7 +3,7 @@ class Hat extends Phaser.Physics.Arcade.Sprite {
         super(scene, x, y, config.hasOwnProperty('img') ? config.img : 'topHat');
         scene.add.existing(this);
         this.myScene = scene;
-		
+		this.hp=config.hasOwnProperty('hp') ? config.hp : 3;
 		this.xoffSet = config.hasOwnProperty('xoff') ? config.xoff : 0;
 		this.yoffSet = config.hasOwnProperty('yoff') ? config.yoff : -30;
 		this.x = this.scene.player.x + this.xoffSet;

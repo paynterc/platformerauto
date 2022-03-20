@@ -155,7 +155,7 @@ class BuffAmongus extends MiniBoss {
     onCorpseDestroy = function(){
 
         this.myScene.dropHatLoot('hornHelmet',this.x,this.y);
-
+        this.myScene.gotHat('hornHelmet');
     }
 
 }

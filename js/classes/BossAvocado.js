@@ -147,6 +147,7 @@ class BossAvocado extends Enemy {
 //                this.myScene.spawnHat();
 //                new HatLoot(this,this.x,this.y,{'hatKey':'blobCrown','img':'blobCrown'});
                 this.myScene.dropHatLoot('avocadoHat',this.x,this.y);
+                this.myScene.gotHat('avocadoHat');
     }
 
 }

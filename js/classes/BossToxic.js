@@ -129,8 +129,8 @@ class BossToxic extends MiniBoss {
 
     onCorpseDestroy = function(){
 
-                    this.myScene.dropHatLoot('hornHelmet',this.x,this.y);
-
+        this.myScene.dropHatLoot('hornHelmet',this.x,this.y);
+        this.myScene.gotHat('hornHelmet');
 //                    new HatLoot(this.myScene,this.x,this.y,{'hatKey':'cakeHat','img':'cakeHat'});
 
 //                curHat = 'hornHelmet';
