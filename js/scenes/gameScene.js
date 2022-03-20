@@ -291,7 +291,6 @@ class GameScene extends Phaser.Scene {
 
 
  		   //new HatLoot(this,this.player.x+128,this.player.y-64,{'hatKey':'blobCrown','img':'blobCrown'});
-        this.gotHat('hornHelmet');
     }
 
     playerShoot(){
